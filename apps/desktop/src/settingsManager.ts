@@ -10,6 +10,19 @@ const defaultSettings: ForgeSettings = {
   tabSize: 2,
   wordWrap: true,
   minimap: true,
+  lineNumbers: 'on',
+  bracketPairColorization: true,
+  autoClosingBrackets: true,
+  cursorBlinking: 'smooth',
+  maxFileSizeMB: 10,
+  autoReindexDebounceMs: 250,
+  aiEnabled: true,
+  aiProvider: 'gemini-3.8-flash',
+  aiInlineCompletions: true,
+  aiContextAwareness: true,
+  telemetryEnabled: false,
+  localOnlyMode: true,
+  terminalPosition: 'bottom',
 };
 
 export class SettingsManager {

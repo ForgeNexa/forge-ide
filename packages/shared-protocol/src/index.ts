@@ -109,7 +109,7 @@ export interface RunResult {
   durationMs: number;
 }
 
-// Settings & Preferences
+// Settings & Preferences (Google Antigravity IDE style)
 export interface ForgeSettings {
   theme: 'graphite-dark' | 'sand-light';
   fontSize: number;
@@ -117,6 +117,23 @@ export interface ForgeSettings {
   tabSize: number;
   wordWrap: boolean;
   minimap: boolean;
+  lineNumbers: 'on' | 'off' | 'relative';
+  bracketPairColorization: boolean;
+  autoClosingBrackets: boolean;
+  cursorBlinking: 'smooth' | 'blink' | 'solid';
+  // Go Daemon & Performance
+  maxFileSizeMB: number;
+  autoReindexDebounceMs: number;
+  // Agentic & AI Pairing (Antigravity IDE mode)
+  aiEnabled: boolean;
+  aiProvider: 'gemini-3.8-flash' | 'gemini-pro' | 'claude-3.7' | 'local';
+  aiInlineCompletions: boolean;
+  aiContextAwareness: boolean;
+  // Privacy & Local-first
+  telemetryEnabled: boolean;
+  localOnlyMode: boolean;
+  // Terminal dock position
+  terminalPosition: 'sidebar' | 'bottom';
 }
 
 // Extension metadata

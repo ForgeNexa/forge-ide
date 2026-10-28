@@ -23,11 +23,14 @@ Unlike heavy monolithic editors, **forge** is local-first, privacy-respecting, a
 
 ## ⚡ Key Highlights & Features
 
-- **VS Code Familiarity:** 
-  - Full Activity Bar with Explorer, Search, Source Control, Run & Debug, and Extensions views.
-  - Multi-tab editor with dirty state tracking, close actions, and smooth keyboard navigation.
-  - **Quick Open (`Cmd+P` / `Ctrl+P`)** with sub-millisecond fuzzy search powered by Go.
+- **VS Code Familiarity & CodeEdit Polish:** 
+  - Full Activity Bar with Explorer, Search, Source Control, Run & Debug, Extensions, and **dedicated Sidebar Terminal**.
+  - **Terminal in Side Activity Bar:** Toggle interactive terminal in the side activity bar with `Ctrl+\`` or dock to the bottom panel.
+  - Multi-tab editor with dirty state tracking, unsaved changes safeguard, and smooth keyboard navigation.
+  - **Google Antigravity IDE Settings Mode:** Category-based preferences dialog with instant search filter, AI agent pairing, and Go daemon performance tuning.
+  - **Quick Open (`Cmd+P` / `Ctrl+P`)** with sub-millisecond fuzzy search and line-jump syntax (`file:line:col`).
   - **Command Palette (`Cmd+Shift+P` / `Ctrl+Shift+P`)** for instant workspace actions.
+  - CodeEdit-inspired macOS compact titlebar, breadcrumb navigation, and one-click file runner.
   - Integrated bottom panel for Terminal, Output logs, Problems, and live Go Daemon telemetry.
   - Status bar tracking Git branch, Cursor Ln/Col, File Encoding (UTF-8), Language mode, and Go indexing speed.
 - **Go-Powered Backend Daemon:**

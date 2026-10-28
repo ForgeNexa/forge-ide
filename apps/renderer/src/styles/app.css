@@ -465,6 +465,53 @@
   font-weight: 600;
 }
 
+/* Settings modal rows and selects */
+.forge-settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.forge-select {
+  background: var(--forge-bg-input);
+  color: var(--forge-text-primary);
+  border: 1px solid var(--forge-border);
+  border-radius: var(--forge-radius-sm);
+  padding: 4px 8px;
+  font-size: 11px;
+  outline: none;
+}
+
+/* Feature Showcase Cards */
+.forge-feature-card {
+  background: var(--forge-bg-sidebar);
+  border: 1px solid var(--forge-border);
+  border-radius: var(--forge-radius-lg);
+  padding: 20px;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.forge-feature-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--forge-accent);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.forge-feature-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--forge-radius-md);
+  background: var(--forge-bg-app);
+  border: 1px solid var(--forge-border-subtle);
+  font-size: 16px;
+}
+
 /* Modals */
 .forge-modal-backdrop {
   position: absolute;

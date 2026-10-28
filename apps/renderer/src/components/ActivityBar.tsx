@@ -6,9 +6,10 @@ import {
   IconDebug,
   IconExtensions,
   IconSettings,
+  IconTerminal,
 } from './Icons';
 
-export type ActivityView = 'explorer' | 'search' | 'git' | 'debug' | 'extensions';
+export type ActivityView = 'explorer' | 'search' | 'git' | 'debug' | 'extensions' | 'terminal';
 
 interface ActivityBarProps {
   activeView: ActivityView | null;
@@ -58,6 +59,13 @@ export const ActivityBar: FC<ActivityBarProps> = ({
           onClick={() => onSelectView('extensions')}
         >
           <IconExtensions />
+        </button>
+        <button
+          className={`forge-activity-btn ${activeView === 'terminal' ? 'active' : ''}`}
+          title="Terminal in Sidebar (Ctrl+\`)"
+          onClick={() => onSelectView('terminal')}
+        >
+          <IconTerminal />
         </button>
       </div>
       <div className="forge-activitybar-bottom">

@@ -19,6 +19,8 @@ import { QuickOpen } from './components/QuickOpen';
 import { GitSidebar } from './components/GitSidebar';
 import { SearchSidebar } from './components/SearchSidebar';
 import { ExtensionsSidebar } from './components/ExtensionsSidebar';
+import { TerminalSidebar } from './components/TerminalSidebar';
+import { ReleaseShowcase } from './components/ReleaseShowcase';
 import { UnsavedChangesModal } from './components/UnsavedChangesModal';
 import { SettingsModal } from './components/SettingsModal';
 import './styles/app.css';
@@ -30,6 +32,19 @@ const defaultSettings: ForgeSettings = {
   tabSize: 2,
   wordWrap: true,
   minimap: true,
+  lineNumbers: 'on',
+  bracketPairColorization: true,
+  autoClosingBrackets: true,
+  cursorBlinking: 'smooth',
+  maxFileSizeMB: 10,
+  autoReindexDebounceMs: 250,
+  aiEnabled: true,
+  aiProvider: 'gemini-3.8-flash',
+  aiInlineCompletions: true,
+  aiContextAwareness: true,
+  telemetryEnabled: false,
+  localOnlyMode: true,
+  terminalPosition: 'bottom',
 };
 
 export const App: FC = () => {
@@ -61,6 +76,15 @@ export const App: FC = () => {
   // Layout states
   const [activeView, setActiveView] = useState<ActivityView | null>('explorer');
   const [showBottomPanel, setShowBottomPanel] = useState(true);
+  const [showReleasePage, setShowReleasePage] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return (
+        window.location.hash.includes('showcase') ||
+        window.location.hash.includes('release')
+      );
+    }
+    return false;
+  });
 
   // Modals
   const [showCommandPalette, setShowCommandPalette] = useState(false);
@@ -649,6 +673,9 @@ export const App: FC = () => {
       } else if (isCmdOrCtrl && e.key === ',') {
         e.preventDefault();
         setShowSettingsModal(true);
+      } else if (e.ctrlKey && (e.key === '`' || e.code === 'Backquote')) {
+        e.preventDefault();
+        setActiveView((prev) => (prev === 'terminal' ? null : 'terminal'));
       } else if (isCmdOrCtrl && e.key === 'w' && activeTabId) {
         e.preventDefault();
         const fakeEvent = { stopPropagation: () => {} } as unknown as MouseEvent;
@@ -671,9 +698,11 @@ export const App: FC = () => {
     { id: 'save-file-as', label: 'Save As...', category: 'File', shortcut: 'Cmd+Shift+S', action: handleSaveAs },
     { id: 'run-file', label: 'Run Current File', category: 'Run', action: handleRunCurrentFile },
     { id: 'rescan-go', label: 'Rescan Workspace with Go Indexer', category: 'Go Backend', action: refreshWorkspace },
-    { id: 'open-settings', label: 'Preferences: Open Settings', category: 'Preferences', shortcut: 'Cmd+,', action: () => setShowSettingsModal(true) },
+    { id: 'open-settings', label: 'Preferences: Open Settings (Antigravity Mode)', category: 'Preferences', shortcut: 'Cmd+,', action: () => setShowSettingsModal(true) },
     { id: 'toggle-sidebar', label: 'Toggle Primary Sidebar', category: 'View', shortcut: 'Cmd+B', action: () => setActiveView((v) => (v ? null : 'explorer')) },
+    { id: 'toggle-terminal-sidebar', label: 'Toggle Sidebar Terminal', category: 'View', shortcut: 'Ctrl+`', action: () => setActiveView((v) => (v === 'terminal' ? null : 'terminal')) },
     { id: 'toggle-panel', label: 'Toggle Bottom Panel', category: 'View', shortcut: 'Cmd+J', action: () => setShowBottomPanel((p) => !p) },
+    { id: 'toggle-showcase', label: showReleasePage ? 'Back to Editor' : 'Features & Release Showcase', category: 'Help', action: () => setShowReleasePage((prev) => !prev) },
   ];
 
   const pendingCloseTab = tabs.find((t) => t.id === pendingCloseTabId);
@@ -711,6 +740,29 @@ export const App: FC = () => {
         </div>
 
         <div className="forge-titlebar-right">
+          <button
+            style={{
+              background: showReleasePage ? 'var(--forge-accent)' : 'rgba(56, 139, 253, 0.12)',
+              color: showReleasePage ? '#ffffff' : 'var(--forge-accent)',
+              border: '1px solid rgba(56, 139, 253, 0.3)',
+              padding: '3px 10px',
+              borderRadius: '12px',
+              fontSize: '11px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 5,
+              marginRight: 12,
+              outline: 'none',
+              transition: 'all 0.15s ease',
+            }}
+            onClick={() => setShowReleasePage((prev) => !prev)}
+            title="View Release Showcase, Live Demos & Architecture"
+          >
+            <span>🚀</span>
+            <span>{showReleasePage ? 'Back to Editor' : 'Features & Release'}</span>
+          </button>
           <span>Yantra Works</span>
         </div>
       </div>
@@ -718,96 +770,116 @@ export const App: FC = () => {
       {/* Main Workbench Layout */}
       <div className="forge-workbench">
         <ActivityBar
-          activeView={activeView}
-          onSelectView={(v) => setActiveView((prev) => (prev === v ? null : v))}
+          activeView={showReleasePage ? null : activeView}
+          onSelectView={(v) => {
+            setShowReleasePage(false);
+            setActiveView((prev) => (prev === v ? null : v));
+          }}
           onOpenSettings={() => setShowSettingsModal(true)}
         />
 
-        {activeView === 'explorer' && (
-          <FileTree
-            workspaceRoot={workspaceRoot}
-            files={files}
-            selectedPath={activeTab?.relativePath || null}
-            onSelectFile={handleSelectFile}
-            onOpenFolder={handleOpenFolder}
-            onRefresh={refreshWorkspace}
-            onCreateFile={handleCreateFile}
-            onCreateFolder={handleCreateFolder}
-            onRenameEntry={handleRenameEntry}
-            onDeleteEntry={handleDeleteEntry}
-            onShowInFolder={handleShowInFolder}
-            isLoading={isLoading}
-          />
+        {showReleasePage ? (
+          <ReleaseShowcase onLaunchEditor={() => setShowReleasePage(false)} />
+        ) : (
+          <>
+            {activeView === 'explorer' && (
+              <FileTree
+                workspaceRoot={workspaceRoot}
+                files={files}
+                selectedPath={activeTab?.relativePath || null}
+                onSelectFile={handleSelectFile}
+                onOpenFolder={handleOpenFolder}
+                onRefresh={refreshWorkspace}
+                onCreateFile={handleCreateFile}
+                onCreateFolder={handleCreateFolder}
+                onRenameEntry={handleRenameEntry}
+                onDeleteEntry={handleDeleteEntry}
+                onShowInFolder={handleShowInFolder}
+                isLoading={isLoading}
+              />
+            )}
+
+            {activeView === 'search' && (
+              <SearchSidebar
+                onSearch={handleContentSearch}
+                onSelectMatch={(fileRel, line, col) => {
+                  const fileObj = files.find((f) => f.relativePath === fileRel) || {
+                    relativePath: fileRel,
+                    absolutePath: fileRel,
+                    name: fileRel.split('/').pop() || fileRel,
+                    isDir: false,
+                    size: 0,
+                    modTime: '',
+                  };
+                  handleSelectFile(fileObj, line, col);
+                }}
+              />
+            )}
+
+            {activeView === 'git' && (
+              <GitSidebar
+                gitStatus={gitStatus}
+                onRefresh={refreshGit}
+                onStageFile={handleStageFile}
+                onUnstageFile={handleUnstageFile}
+                onStageAll={handleStageAll}
+                onUnstageAll={handleUnstageAll}
+                onDiscardChanges={handleDiscardChanges}
+                onCommit={handleCommit}
+                onViewDiff={handleViewDiff}
+                onSwitchBranch={handleSwitchBranch}
+                branches={branches}
+              />
+            )}
+
+            {activeView === 'extensions' && <ExtensionsSidebar />}
+
+            {activeView === 'terminal' && (
+              <TerminalSidebar
+                cwd={workspaceRoot}
+                theme={settings.theme}
+                onMoveToBottom={() => {
+                  setActiveView(null);
+                  setShowBottomPanel(true);
+                }}
+              />
+            )}
+
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+              <EditorArea
+                workspaceRoot={workspaceRoot}
+                tabs={tabs}
+                activeTabId={activeTabId}
+                settings={settings}
+                onSelectTab={setActiveTabId}
+                onCloseTab={handleCloseTabRequest}
+                onCloseOthers={handleCloseOthers}
+                onCloseAll={handleCloseAll}
+                onContentChange={handleContentChange}
+                onCursorChange={(line, col) => setCursorPos({ line, col })}
+                onSave={handleSave}
+                onOpenQuickOpen={() => setShowQuickOpen(true)}
+                onOpenCommandPalette={() => setShowCommandPalette(true)}
+                onOpenFolder={handleOpenFolder}
+                onOpenFile={handleOpenFile}
+                onRunFile={handleRunCurrentFile}
+                isRunning={isRunningFile}
+              />
+
+              {showBottomPanel && (
+                <BottomPanel
+                  cwd={workspaceRoot}
+                  theme={settings.theme}
+                  health={health}
+                  daemonInfo={daemonInfo}
+                  indexStats={indexStats}
+                  logs={logs}
+                  onClose={() => setShowBottomPanel(false)}
+                />
+              )}
+            </div>
+          </>
         )}
-
-        {activeView === 'search' && (
-          <SearchSidebar
-            onSearch={handleContentSearch}
-            onSelectMatch={(fileRel, line, col) => {
-              const fileObj = files.find((f) => f.relativePath === fileRel) || {
-                relativePath: fileRel,
-                absolutePath: fileRel,
-                name: fileRel.split('/').pop() || fileRel,
-                isDir: false,
-                size: 0,
-                modTime: '',
-              };
-              handleSelectFile(fileObj, line, col);
-            }}
-          />
-        )}
-
-        {activeView === 'git' && (
-          <GitSidebar
-            gitStatus={gitStatus}
-            onRefresh={refreshGit}
-            onStageFile={handleStageFile}
-            onUnstageFile={handleUnstageFile}
-            onStageAll={handleStageAll}
-            onUnstageAll={handleUnstageAll}
-            onDiscardChanges={handleDiscardChanges}
-            onCommit={handleCommit}
-            onViewDiff={handleViewDiff}
-            onSwitchBranch={handleSwitchBranch}
-            branches={branches}
-          />
-        )}
-
-        {activeView === 'extensions' && <ExtensionsSidebar />}
-
-        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
-          <EditorArea
-            workspaceRoot={workspaceRoot}
-            tabs={tabs}
-            activeTabId={activeTabId}
-            settings={settings}
-            onSelectTab={setActiveTabId}
-            onCloseTab={handleCloseTabRequest}
-            onCloseOthers={handleCloseOthers}
-            onCloseAll={handleCloseAll}
-            onContentChange={handleContentChange}
-            onCursorChange={(line, col) => setCursorPos({ line, col })}
-            onSave={handleSave}
-            onOpenQuickOpen={() => setShowQuickOpen(true)}
-            onOpenCommandPalette={() => setShowCommandPalette(true)}
-            onOpenFolder={handleOpenFolder}
-            onOpenFile={handleOpenFile}
-            onRunFile={handleRunCurrentFile}
-            isRunning={isRunningFile}
-          />
-
-          {showBottomPanel && (
-            <BottomPanel
-              cwd={workspaceRoot}
-              theme={settings.theme}
-              health={health}
-              daemonInfo={daemonInfo}
-              indexStats={indexStats}
-              logs={logs}
-              onClose={() => setShowBottomPanel(false)}
-            />
-          )}
-        </div>
       </div>
 
       {/* Bottom Status Bar */}
