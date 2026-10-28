@@ -71,9 +71,21 @@ const api: MyForgeAPI = {
   extensionToggleEnable: (id: string, enabled: boolean) => ipcRenderer.invoke('extension:toggleEnable', id, enabled),
   extensionGetInstalled: () => ipcRenderer.invoke('extension:getInstalled'),
 
+  lspGetRegistry: () => ipcRenderer.invoke('lsp:getRegistry'),
+  lspGetDiagnostics: (filePath?: string) => ipcRenderer.invoke('lsp:getDiagnostics', filePath),
+
+  aiGetCompletion: (req: any) => ipcRenderer.invoke('ai:getCompletion', req),
+  aiGetStatus: () => ipcRenderer.invoke('ai:getStatus'),
+
   getSettings: () => ipcRenderer.invoke('settings:get'),
   saveSettings: (settings: any) => ipcRenderer.invoke('settings:save', settings),
+  resetSettings: () => ipcRenderer.invoke('settings:reset'),
+  exportSettings: () => ipcRenderer.invoke('settings:export'),
+  importSettings: (json: string) => ipcRenderer.invoke('settings:import', json),
   getRecentWorkspaces: () => ipcRenderer.invoke('settings:getRecentWorkspaces'),
+
+  getDiagnosticReport: () => ipcRenderer.invoke('diagnostics:getReport'),
+  openLogDir: () => ipcRenderer.invoke('diagnostics:openLogDir'),
 
   minimize: () => ipcRenderer.send('window:minimize'),
   maximize: () => ipcRenderer.send('window:maximize'),

@@ -7,6 +7,16 @@ import { RunnerManager } from './runnerManager';
 import { SettingsManager } from './settingsManager';
 import { TaskManager } from './taskManager';
 import { ExtensionManager } from './extensionManager';
+import { LspManager } from './lsp/lspManager';
+import { LocalAIProvider } from './ai/localAIProvider';
+import { logger } from './logger';
+
+process.on('uncaughtException', (err) => {
+  logger.error('main', `Uncaught exception: ${err.message}`, { stack: err.stack });
+});
+process.on('unhandledRejection', (reason: any) => {
+  logger.error('main', `Unhandled promise rejection: ${reason?.message || reason}`);
+});
 
 let mainWindow: BrowserWindow | null = null;
 let currentWorkspace = process.cwd();
@@ -18,6 +28,8 @@ const settings = new SettingsManager();
 const terminal = new TerminalManager(() => mainWindow);
 const taskManager = new TaskManager();
 const extensionManager = new ExtensionManager();
+const lspManager = new LspManager();
+const localAIProvider = new LocalAIProvider();
 
 async function createWindow() {
   mainWindow = new BrowserWindow({
@@ -193,10 +205,33 @@ function registerIPCHandlers() {
     return extensionManager.getInstalled();
   });
 
+  // Language Server Protocol (LSP)
+  ipcMain.handle('lsp:getRegistry', async () => {
+    return lspManager.getRegistry();
+  });
+  ipcMain.handle('lsp:getDiagnostics', async (_, targetFile?: string) => {
+    return lspManager.getDiagnostics(currentWorkspace, targetFile);
+  });
+
+  // Local AI Autocomplete
+  ipcMain.handle('ai:getCompletion', async (_, req: any) => {
+    return localAIProvider.getCompletion(req);
+  });
+  ipcMain.handle('ai:getStatus', async () => {
+    return localAIProvider.getStatus();
+  });
+
   // Settings
   ipcMain.handle('settings:get', async () => settings.getSettings());
   ipcMain.handle('settings:save', async (_, patch: any) => settings.saveSettings(patch));
+  ipcMain.handle('settings:reset', async () => settings.resetSettings());
+  ipcMain.handle('settings:export', async () => settings.exportSettings());
+  ipcMain.handle('settings:import', async (_, json: string) => settings.importSettings(json));
   ipcMain.handle('settings:getRecentWorkspaces', async () => settings.getRecentWorkspaces());
+
+  // Structured Logging & Diagnostics
+  ipcMain.handle('diagnostics:getReport', async () => logger.generateDiagnosticReport());
+  ipcMain.handle('diagnostics:openLogDir', async () => shell.openPath(logger.getLogDirectory()));
 
   // Window Controls
   ipcMain.on('window:minimize', () => mainWindow?.minimize());

@@ -8,6 +8,9 @@ interface BreadcrumbsProps {
   iconTheme?: 'material-icon-theme' | 'minimal';
   onRunFile?: () => void;
   isRunning?: boolean;
+  isMarkdown?: boolean;
+  isPreviewMarkdown?: boolean;
+  onToggleMarkdownPreview?: () => void;
 }
 
 export const Breadcrumbs: FC<BreadcrumbsProps> = ({
@@ -16,6 +19,9 @@ export const Breadcrumbs: FC<BreadcrumbsProps> = ({
   iconTheme = 'material-icon-theme',
   onRunFile,
   isRunning,
+  isMarkdown,
+  isPreviewMarkdown,
+  onToggleMarkdownPreview,
 }) => {
   if (!activePath) return null;
 
@@ -50,17 +56,40 @@ export const Breadcrumbs: FC<BreadcrumbsProps> = ({
         ))}
       </div>
 
-      {isRunnable && onRunFile && (
-        <button
-          className="forge-run-btn"
-          title="Run Current File"
-          onClick={onRunFile}
-          disabled={isRunning}
-        >
-          <IconPlay />
-          <span>{isRunning ? 'Running...' : 'Run'}</span>
-        </button>
-      )}
+      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+        {isMarkdown && onToggleMarkdownPreview && (
+          <button
+            onClick={onToggleMarkdownPreview}
+            style={{
+              padding: '2px 8px',
+              fontSize: '11px',
+              background: isPreviewMarkdown ? 'var(--forge-accent)' : 'transparent',
+              color: isPreviewMarkdown ? '#ffffff' : 'var(--forge-text-muted)',
+              border: '1px solid var(--forge-border)',
+              borderRadius: 4,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+            }}
+            title={isPreviewMarkdown ? 'Switch to Markdown source code' : 'Preview rendered Markdown'}
+          >
+            {isPreviewMarkdown ? '✎ Code' : '👁 Preview'}
+          </button>
+        )}
+
+        {isRunnable && onRunFile && (
+          <button
+            className="forge-run-btn"
+            title="Run Current File"
+            onClick={onRunFile}
+            disabled={isRunning}
+          >
+            <IconPlay />
+            <span>{isRunning ? 'Running...' : 'Run'}</span>
+          </button>
+        )}
+      </div>
     </div>
   );
 };

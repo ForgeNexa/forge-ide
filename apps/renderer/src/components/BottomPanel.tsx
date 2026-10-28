@@ -17,11 +17,13 @@ interface BottomPanelProps {
   indexStats: IndexStats | null;
   logs: string[];
   diagnostics?: DiagnosticMarker[];
+  activeTab?: BottomTab;
+  onTabChange?: (tab: BottomTab) => void;
   onSelectDiagnostic?: (diag: DiagnosticMarker) => void;
   onClose: () => void;
 }
 
-type BottomTab =
+export type BottomTab =
   | 'terminal'
   | 'problems'
   | 'output'
@@ -46,10 +48,24 @@ export const BottomPanel: FC<BottomPanelProps> = ({
   indexStats,
   logs,
   diagnostics = [],
+  activeTab: activeTabProp,
+  onTabChange,
   onSelectDiagnostic,
   onClose,
 }) => {
-  const [activeTab, setActiveTab] = useState<BottomTab>('terminal');
+  const [internalActiveTab, setInternalActiveTab] = useState<BottomTab>(() => {
+    return (localStorage.getItem('forge:bottom-panel-active-tab') as BottomTab) || 'terminal';
+  });
+  const activeTab = activeTabProp || internalActiveTab;
+  const setActiveTab = (tab: BottomTab) => {
+    setInternalActiveTab(tab);
+    localStorage.setItem('forge:bottom-panel-active-tab', tab);
+    if (onTabChange) onTabChange(tab);
+  };
+  const [isMaximized, setIsMaximized] = useState(false);
+  const [isSplitTerminal, setIsSplitTerminal] = useState(false);
+  const [selectedShell, setSelectedShell] = useState<string>('zsh');
+  const [terminalResetKey, setTerminalResetKey] = useState(0);
   const [height, setHeight] = useState<number>(() => {
     const saved = localStorage.getItem('forge:bottom-panel-height');
     return saved ? Math.max(160, Math.min(600, parseInt(saved, 10))) : 260;
@@ -228,28 +244,31 @@ export const BottomPanel: FC<BottomPanelProps> = ({
     <div
       className="forge-panel"
       style={{
-        height: `${height}px`,
+        height: isMaximized ? 'calc(100vh - 80px)' : `${height}px`,
         position: 'relative',
         display: 'flex',
         flexDirection: 'column',
+        transition: isDragging ? 'none' : 'height 0.15s ease',
       }}
     >
       {/* IntelliJ Resizable Drag Handle */}
-      <div
-        style={{
-          position: 'absolute',
-          top: -3,
-          left: 0,
-          right: 0,
-          height: 6,
-          cursor: 'ns-resize',
-          zIndex: 10,
-          background: isDragging ? 'var(--forge-accent)' : 'transparent',
-          transition: 'background 0.1s ease',
-        }}
-        onMouseDown={() => setIsDragging(true)}
-        title="Drag to resize Tool Window"
-      />
+      {!isMaximized && (
+        <div
+          style={{
+            position: 'absolute',
+            top: -3,
+            left: 0,
+            right: 0,
+            height: 6,
+            cursor: 'ns-resize',
+            zIndex: 10,
+            background: isDragging ? 'var(--forge-accent)' : 'transparent',
+            transition: 'background 0.1s ease',
+          }}
+          onMouseDown={() => setIsDragging(true)}
+          title="Drag to resize Tool Window"
+        />
+      )}
 
       {/* IntelliJ-Style Tab Strip */}
       <div className="forge-panel-header" style={{ padding: '0 8px', minHeight: '32px' }}>
@@ -318,8 +337,19 @@ export const BottomPanel: FC<BottomPanelProps> = ({
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
           <button
             className="forge-icon-btn"
+            title={isMaximized ? "Restore Tool Window Size" : "Maximize Tool Window"}
+            onClick={() => setIsMaximized((prev) => !prev)}
+            style={{ fontSize: '12px' }}
+          >
+            {isMaximized ? '🗗' : '🗖'}
+          </button>
+          <button
+            className="forge-icon-btn"
             title="Reset default height"
-            onClick={() => setHeight(260)}
+            onClick={() => {
+              setIsMaximized(false);
+              setHeight(260);
+            }}
             style={{ fontSize: '11px' }}
           >
             ↕
@@ -335,7 +365,7 @@ export const BottomPanel: FC<BottomPanelProps> = ({
         {/* 1. Terminal Tool Window */}
         {activeTab === 'terminal' && (
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-            {/* Session tabs */}
+            {/* Session tabs & Terminal Controls */}
             <div
               style={{
                 display: 'flex',
@@ -361,6 +391,14 @@ export const BottomPanel: FC<BottomPanelProps> = ({
                     cursor: 'pointer',
                   }}
                   onClick={() => setActiveSession(sess)}
+                  onDoubleClick={() => {
+                    const renamed = prompt('Rename terminal session:', sess);
+                    if (renamed && renamed.trim()) {
+                      setTerminalSessions((prev) => prev.map((s) => (s === sess ? renamed.trim() : s)));
+                      if (activeSession === sess) setActiveSession(renamed.trim());
+                    }
+                  }}
+                  title="Double-click to rename session"
                 >
                   <span>{sess}</span>
                   {terminalSessions.length > 1 && (
@@ -373,6 +411,7 @@ export const BottomPanel: FC<BottomPanelProps> = ({
                         }
                       }}
                       style={{ opacity: 0.6 }}
+                      title="Close session"
                     >
                       ×
                     </span>
@@ -391,9 +430,52 @@ export const BottomPanel: FC<BottomPanelProps> = ({
               >
                 +
               </button>
+
+              <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
+                {/* Shell selector */}
+                <select
+                  className="forge-select"
+                  style={{ fontSize: '11px', padding: '1px 6px', height: '22px' }}
+                  value={selectedShell}
+                  onChange={(e) => setSelectedShell(e.target.value)}
+                  title="Terminal Shell Profile"
+                >
+                  <option value="zsh">Zsh</option>
+                  <option value="bash">Bash</option>
+                  <option value="sh">sh</option>
+                  <option value="powershell">PowerShell</option>
+                  <option value="cmd">Command Prompt</option>
+                </select>
+
+                <button
+                  className={`forge-icon-btn ${isSplitTerminal ? 'active' : ''}`}
+                  title="Toggle Split Terminal View"
+                  onClick={() => setIsSplitTerminal((p) => !p)}
+                  style={{ fontSize: '11px', padding: '1px 6px' }}
+                >
+                  ◫ Split
+                </button>
+
+                <button
+                  className="forge-icon-btn"
+                  title="Clear Terminal Session"
+                  onClick={() => setTerminalResetKey((k) => k + 1)}
+                  style={{ fontSize: '11px', padding: '1px 6px' }}
+                >
+                  ⎚ Clear
+                </button>
+              </div>
             </div>
-            <div style={{ flex: 1, position: 'relative' }}>
-              <TerminalTab key={activeSession} cwd={cwd} theme={theme} />
+
+            <div style={{ flex: 1, position: 'relative', display: 'flex' }}>
+              <div style={{ flex: 1, height: '100%', position: 'relative' }}>
+                <TerminalTab key={`${activeSession}-${terminalResetKey}`} cwd={cwd} theme={theme} />
+              </div>
+              {isSplitTerminal && (
+                <div style={{ flex: 1, height: '100%', position: 'relative', borderLeft: '1px solid var(--forge-border)' }}>
+                  <TerminalTab key={`split-${activeSession}-${terminalResetKey}`} cwd={cwd} theme={theme} />
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -105,10 +105,9 @@ export class TaskManager {
     onExit: (code: number) => void
   ): string {
     const taskId = `${task.id}-${Date.now()}`;
-    const [bin, ...args] = task.command.split(' ');
 
     try {
-      const child = spawn(bin, args, {
+      const child = spawn(task.command, {
         cwd: cwd || process.cwd(),
         shell: true,
         env: { ...process.env, FORCE_COLOR: '1' },

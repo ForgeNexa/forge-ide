@@ -9,18 +9,22 @@ import {
   IconTerminal,
 } from './Icons';
 
-export type ActivityView = 'explorer' | 'search' | 'git' | 'debug' | 'extensions' | 'terminal';
+export type ActivityView = 'explorer' | 'search' | 'git' | 'debug' | 'extensions';
 
 interface ActivityBarProps {
   activeView: ActivityView | null;
   onSelectView: (view: ActivityView) => void;
   onOpenSettings: () => void;
+  onToggleTerminal: () => void;
+  isTerminalOpen?: boolean;
 }
 
 export const ActivityBar: FC<ActivityBarProps> = ({
   activeView,
   onSelectView,
   onOpenSettings,
+  onToggleTerminal,
+  isTerminalOpen,
 }) => {
   return (
     <div className="forge-activitybar">
@@ -61,9 +65,9 @@ export const ActivityBar: FC<ActivityBarProps> = ({
           <IconExtensions />
         </button>
         <button
-          className={`forge-activity-btn ${activeView === 'terminal' ? 'active' : ''}`}
-          title="Terminal in Sidebar (Ctrl+\`)"
-          onClick={() => onSelectView('terminal')}
+          className={`forge-activity-btn ${isTerminalOpen ? 'active' : ''}`}
+          title="Integrated Terminal (Ctrl+` / Cmd+J)"
+          onClick={onToggleTerminal}
         >
           <IconTerminal />
         </button>

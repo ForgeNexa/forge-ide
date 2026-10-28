@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, type FC, type MouseEvent } from 'react';
+import { useState, useEffect, useCallback, useRef, type FC, type MouseEvent } from 'react';
 import {
   FileEntry,
   IndexStats,
@@ -8,49 +8,27 @@ import {
   GitFileStatus,
   ForgeSettings,
   ContentSearchResult,
+  DiagnosticMarker,
+  defaultForgeSettings,
 } from '@my-forge/shared-protocol';
 import { ActivityBar, ActivityView } from './components/ActivityBar';
 import { FileTree } from './components/FileTree';
 import { EditorArea, EditorTab } from './components/EditorArea';
-import { BottomPanel } from './components/BottomPanel';
+import { BottomPanel, BottomTab } from './components/BottomPanel';
 import { StatusBar } from './components/StatusBar';
 import { CommandPalette, CommandItem } from './components/CommandPalette';
 import { QuickOpen } from './components/QuickOpen';
 import { GitSidebar } from './components/GitSidebar';
 import { SearchSidebar } from './components/SearchSidebar';
 import { ExtensionsSidebar } from './components/ExtensionsSidebar';
-import { TerminalSidebar } from './components/TerminalSidebar';
 import { ProductLandingPage } from './components/ProductLandingPage';
 import { UnsavedChangesModal } from './components/UnsavedChangesModal';
 import { SettingsModal } from './components/SettingsModal';
 import './styles/app.css';
 
-const defaultSettings: ForgeSettings = {
-  theme: '2026-dark',
-  iconTheme: 'material-icon-theme',
-  fontSize: 13,
-  fontFamily: 'JetBrains Mono, Menlo, Monaco, monospace',
-  tabSize: 2,
-  wordWrap: true,
-  minimap: true,
-  lineNumbers: 'on',
-  bracketPairColorization: true,
-  autoClosingBrackets: true,
-  cursorBlinking: 'smooth',
-  maxFileSizeMB: 10,
-  autoReindexDebounceMs: 250,
-  aiEnabled: true,
-  aiProvider: 'gemini-3.8-flash',
-  aiInlineCompletions: true,
-  aiContextAwareness: true,
-  telemetryEnabled: false,
-  localOnlyMode: true,
-  terminalPosition: 'bottom',
-};
-
 export const App: FC = () => {
   // Settings & Theme
-  const [settings, setSettings] = useState<ForgeSettings>(defaultSettings);
+  const [settings, setSettings] = useState<ForgeSettings>(defaultForgeSettings);
 
   // Workspace
   const [workspaceRoot, setWorkspaceRoot] = useState<string>('');
@@ -77,7 +55,46 @@ export const App: FC = () => {
   // Layout states
   const [activeView, setActiveView] = useState<ActivityView | null>('explorer');
   const [showBottomPanel, setShowBottomPanel] = useState(true);
+  const [bottomPanelTab, setBottomPanelTab] = useState<BottomTab>(() => {
+    return (localStorage.getItem('forge:bottom-panel-active-tab') as BottomTab) || 'terminal';
+  });
+  const [diagnostics, setDiagnostics] = useState<DiagnosticMarker[]>([]);
   const isWebPreview = !window.myForgeAPI;
+  const autoSaveTimers = useRef<Map<string, any>>(new Map());
+
+  const appendLog = useCallback((msg: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    setLogs((prev) => [...prev, `[${timestamp}] ${msg}`].slice(-300));
+  }, []);
+
+  // Autosave when window loses focus if mode is 'onFocusChange'
+  useEffect(() => {
+    const handleBlur = () => {
+      if (settings.autoSave === 'onFocusChange') {
+        tabs.forEach((tab) => {
+          if (tab.isDirty && window.myForgeAPI) {
+            window.myForgeAPI.writeFile(tab.relativePath, tab.content).then(() => {
+              setTabs((prev) =>
+                prev.map((t) => (t.id === tab.id ? { ...t, isDirty: false, originalContent: t.content } : t))
+              );
+              appendLog(`Autosaved (focus change): ${tab.relativePath}`);
+            });
+          }
+        });
+      }
+    };
+    window.addEventListener('blur', handleBlur);
+    return () => window.removeEventListener('blur', handleBlur);
+  }, [settings.autoSave, tabs, appendLog]);
+
+  const handleToggleTerminal = useCallback(() => {
+    if (showBottomPanel && bottomPanelTab === 'terminal') {
+      setShowBottomPanel(false);
+    } else {
+      setBottomPanelTab('terminal');
+      setShowBottomPanel(true);
+    }
+  }, [showBottomPanel, bottomPanelTab]);
 
   const [showProductWebsite, setShowProductWebsite] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
@@ -122,11 +139,6 @@ export const App: FC = () => {
   // Cursor indicator
   const [cursorPos, setCursorPos] = useState({ line: 1, col: 1 });
 
-  const appendLog = useCallback((msg: string) => {
-    const timestamp = new Date().toLocaleTimeString();
-    setLogs((prev) => [...prev, `[${timestamp}] ${msg}`].slice(-300));
-  }, []);
-
   // Sync theme
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', settings.theme);
@@ -168,6 +180,10 @@ export const App: FC = () => {
       setFiles(entries);
       appendLog(`Indexed: ${stats.totalFiles} files, ${stats.totalDirs} dirs in ${stats.durationMs}ms`);
       await refreshGit();
+      if (window.myForgeAPI?.lspGetDiagnostics) {
+        const diags = await window.myForgeAPI.lspGetDiagnostics();
+        setDiagnostics(diags);
+      }
     } catch (err: any) {
       appendLog(`Indexing error: ${err.message}`);
     } finally {
@@ -305,17 +321,23 @@ export const App: FC = () => {
       return;
     }
 
-    let content = '// File content';
-    if (window.myForgeAPI) {
-      try {
-        const res = await window.myForgeAPI.readFile(file.relativePath);
-        content = res.content;
-      } catch (err: any) {
-        appendLog(`Failed to read file ${file.relativePath}: ${err.message}`);
-        content = `// Error reading file: ${err.message}`;
+    const lower = file.name.toLowerCase();
+    const isImage = /\.(png|jpe?g|gif|webp|bmp|ico|svg)$/i.test(lower);
+    const isBinary = /\.(exe|dll|bin|wasm|tar|gz|zip|7z|rar|iso|pdf|dylib|so)$/i.test(lower);
+
+    let content = '';
+    if (!isImage && !isBinary) {
+      if (window.myForgeAPI) {
+        try {
+          const res = await window.myForgeAPI.readFile(file.relativePath);
+          content = res.content;
+        } catch (err: any) {
+          appendLog(`Failed to read file ${file.relativePath}: ${err.message}`);
+          content = `// Error reading file: ${err.message}`;
+        }
+      } else {
+        content = `// forge Web Preview\n// File: ${file.relativePath}\n\npackage main\n\nimport "fmt"\n\nfunc main() {\n\tfmt.Println("Welcome to forge by Yantra Works!")\n}\n`;
       }
-    } else {
-      content = `// forge Web Preview\n// File: ${file.relativePath}\n\npackage main\n\nimport "fmt"\n\nfunc main() {\n\tfmt.Println("Welcome to forge by Yantra Works!")\n}\n`;
     }
 
     const newTab: EditorTab = {
@@ -324,14 +346,24 @@ export const App: FC = () => {
       title: file.name,
       content,
       originalContent: content,
-      languageId: file.languageId || 'plaintext',
+      languageId: file.languageId || (file.name.endsWith('.md') ? 'markdown' : 'plaintext'),
       isDirty: false,
+      isImage,
+      imageUrl: isImage && window.myForgeAPI ? `file://${workspaceRoot}/${file.relativePath}` : undefined,
+      isBinary,
+      isPreviewMarkdown: false,
     };
 
     setTabs((prev) => [...prev, newTab]);
     setActiveTabId(newTab.id);
     if (jumpLine) setCursorPos({ line: jumpLine, col: jumpCol || 1 });
     appendLog(`Opened: ${file.relativePath}`);
+  };
+
+  const handleToggleMarkdownPreview = (tabId: string) => {
+    setTabs((prev) =>
+      prev.map((t) => (t.id === tabId ? { ...t, isPreviewMarkdown: !t.isPreviewMarkdown } : t))
+    );
   };
 
   // Tab Close with Unsaved Safeguard (Part B & Flow 3)
@@ -384,6 +416,30 @@ export const App: FC = () => {
         return t;
       })
     );
+
+    // Autosave after delay
+    if (settings.autoSave === 'afterDelay') {
+      const existing = autoSaveTimers.current.get(id);
+      if (existing) clearTimeout(existing);
+
+      const delay = settings.autoSaveDelayMs || 1000;
+      const timer = setTimeout(async () => {
+        const target = tabs.find((t) => t.id === id);
+        if (target && target.isDirty && window.myForgeAPI) {
+          try {
+            await window.myForgeAPI.writeFile(target.relativePath, content);
+            setTabs((prev) =>
+              prev.map((t) => (t.id === id ? { ...t, isDirty: false, originalContent: content } : t))
+            );
+            appendLog(`Autosaved: ${target.relativePath}`);
+            await refreshGit();
+          } catch (err: any) {
+            appendLog(`Autosave failed: ${err.message}`);
+          }
+        }
+      }, delay);
+      autoSaveTimers.current.set(id, timer);
+    }
   };
 
   // Overwrite Save
@@ -698,7 +754,7 @@ export const App: FC = () => {
         setShowSettingsModal(true);
       } else if (e.ctrlKey && (e.key === '`' || e.code === 'Backquote')) {
         e.preventDefault();
-        setActiveView((prev) => (prev === 'terminal' ? null : 'terminal'));
+        handleToggleTerminal();
       } else if (isCmdOrCtrl && e.key === 'w' && activeTabId) {
         e.preventDefault();
         const fakeEvent = { stopPropagation: () => {} } as unknown as MouseEvent;
@@ -723,7 +779,7 @@ export const App: FC = () => {
     { id: 'rescan-go', label: 'Rescan Workspace with Go Indexer', category: 'Go Backend', action: refreshWorkspace },
     { id: 'open-settings', label: 'Preferences: Open Settings (Antigravity Mode)', category: 'Preferences', shortcut: 'Cmd+,', action: () => setShowSettingsModal(true) },
     { id: 'toggle-sidebar', label: 'Toggle Primary Sidebar', category: 'View', shortcut: 'Cmd+B', action: () => setActiveView((v) => (v ? null : 'explorer')) },
-    { id: 'toggle-terminal-sidebar', label: 'Toggle Sidebar Terminal', category: 'View', shortcut: 'Ctrl+`', action: () => setActiveView((v) => (v === 'terminal' ? null : 'terminal')) },
+    { id: 'toggle-terminal', label: 'View: Toggle Integrated Terminal (Bottom Panel)', category: 'View', shortcut: 'Ctrl+`', action: handleToggleTerminal },
     { id: 'toggle-panel', label: 'Toggle Bottom Panel', category: 'View', shortcut: 'Cmd+J', action: () => setShowBottomPanel((p) => !p) },
     { id: 'toggle-docs', label: showProductWebsite ? 'Return to IDE Workspace' : 'Open Product Website & Docs', category: 'Help', action: () => setShowProductWebsite((prev) => !prev) },
   ];
@@ -822,6 +878,8 @@ export const App: FC = () => {
             setActiveView((prev) => (prev === v ? null : v));
           }}
           onOpenSettings={() => setShowSettingsModal(true)}
+          onToggleTerminal={handleToggleTerminal}
+          isTerminalOpen={showBottomPanel && bottomPanelTab === 'terminal'}
         />
 
         {showProductWebsite ? (
@@ -889,17 +947,6 @@ export const App: FC = () => {
 
             {activeView === 'extensions' && <ExtensionsSidebar />}
 
-            {activeView === 'terminal' && (
-              <TerminalSidebar
-                cwd={workspaceRoot}
-                theme={settings.theme}
-                onMoveToBottom={() => {
-                  setActiveView(null);
-                  setShowBottomPanel(true);
-                }}
-              />
-            )}
-
             <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
               <EditorArea
                 workspaceRoot={workspaceRoot}
@@ -919,6 +966,7 @@ export const App: FC = () => {
                 onOpenFile={handleOpenFile}
                 onRunFile={handleRunCurrentFile}
                 isRunning={isRunningFile}
+                onToggleMarkdownPreview={handleToggleMarkdownPreview}
               />
 
               {showBottomPanel && (
@@ -929,6 +977,23 @@ export const App: FC = () => {
                   daemonInfo={daemonInfo}
                   indexStats={indexStats}
                   logs={logs}
+                  diagnostics={diagnostics}
+                  activeTab={bottomPanelTab}
+                  onTabChange={setBottomPanelTab}
+                  onSelectDiagnostic={(diag) => {
+                    handleSelectFile(
+                      {
+                        relativePath: diag.file,
+                        absolutePath: diag.file,
+                        name: diag.file.split('/').pop() || diag.file,
+                        isDir: false,
+                        size: 0,
+                        modTime: '',
+                      },
+                      diag.line,
+                      diag.col
+                    );
+                  }}
                   onClose={() => setShowBottomPanel(false)}
                 />
               )}

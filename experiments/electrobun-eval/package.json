@@ -1,0 +1,13 @@
+{
+  "name": "forge-electrobun-prototype",
+  "version": "0.1.0",
+  "description": "Experimental Electrobun desktop shell prototype for Forge IDE",
+  "private": true,
+  "scripts": {
+    "dev": "electrobun dev",
+    "build": "electrobun build"
+  },
+  "dependencies": {
+    "electrobun": "^2.0.5"
+  }
+}
