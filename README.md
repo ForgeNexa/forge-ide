@@ -106,7 +106,7 @@ Unlike heavy monolithic editors, **forge** is local-first, privacy-respecting, a
 ### Installation & Build
 ```bash
 # 1. Clone the repository
-git clone https://github.com/manish-nppm/forge.git
+git clone https://github.com/manish-npx/forge.git
 cd forge
 
 # 2. Install workspace dependencies
