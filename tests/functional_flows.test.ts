@@ -16,12 +16,21 @@ import { LocalAIProvider } from '../apps/desktop/src/ai/localAIProvider.js';
 // Helper to spawn daemon and create JSON-RPC client
 function getDaemonBinaryPath(): string {
   const isWindows = process.platform === 'win32';
-  const names = isWindows ? ['forge-daemon.exe', 'forge-daemon'] : ['forge-daemon', 'forge-daemon.exe'];
-  for (const name of names) {
-    const candidate = path.resolve(process.cwd(), 'services/forge-daemon/bin', name);
-    if (fs.existsSync(candidate)) return candidate;
+  if (isWindows) {
+    const exeCandidate = path.resolve(process.cwd(), 'services/forge-daemon/bin/forge-daemon.exe');
+    if (fs.existsSync(exeCandidate)) return exeCandidate;
+    const rawCandidate = path.resolve(process.cwd(), 'services/forge-daemon/bin/forge-daemon');
+    if (fs.existsSync(rawCandidate)) {
+      try {
+        fs.copyFileSync(rawCandidate, exeCandidate);
+        return exeCandidate;
+      } catch {
+        // ignore
+      }
+    }
+    return exeCandidate;
   }
-  return path.resolve(process.cwd(), 'services/forge-daemon/bin', names[0]);
+  return path.resolve(process.cwd(), 'services/forge-daemon/bin/forge-daemon');
 }
 
 function createDaemonClient() {
