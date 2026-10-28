@@ -3,6 +3,77 @@
 */
 
 :root,
+[data-theme="2026-dark"] {
+  /* 2026 Dark Theme (mrleemurray.theme-2026) */
+  --forge-bg-app: #121314;
+  --forge-bg-titlebar: #191A1B;
+  --forge-bg-activitybar: #191A1B;
+  --forge-bg-sidebar: #191A1B;
+  --forge-bg-editor: #121314;
+  --forge-bg-breadcrumbs: #121314;
+  --forge-bg-tabbar: #191A1B;
+  --forge-bg-tab-active: #121314;
+  --forge-bg-tab-inactive: #191A1B;
+  --forge-bg-panel: #191A1B;
+  --forge-bg-statusbar: #191A1B;
+  --forge-bg-input: #191A1B;
+  --forge-bg-dialog: #202122;
+  --forge-bg-hover: rgba(255, 255, 255, 0.08);
+  --forge-bg-active: rgba(255, 255, 255, 0.14);
+  --forge-bg-selection: #27678280;
+
+  /* Borders */
+  --forge-border: #2A2B2C;
+  --forge-border-subtle: #222324;
+  --forge-border-focus: #3994BCB3;
+
+  /* Text & Labels */
+  --forge-text-primary: #bfbfbf;
+  --forge-text-secondary: #8C8C8C;
+  --forge-text-muted: #666666;
+  --forge-text-disabled: #555555;
+
+  /* Accent & Status Colors */
+  --forge-accent: #297AA0;
+  --forge-accent-hover: #2B7DA3;
+  --forge-accent-subtle: rgba(41, 122, 160, 0.16);
+  --forge-tab-active-border: #3994BC;
+  --forge-success: #72C892;
+  --forge-warning: #e5ba7d;
+  --forge-error: #f48771;
+  --forge-git-added: #73c991;
+  --forge-git-modified: #e5ba7d;
+  --forge-git-deleted: #f48771;
+  --forge-badge-bg: #307E9F;
+
+  /* Dimensions */
+  --forge-activitybar-width: 44px;
+  --forge-sidebar-width: 250px;
+  --forge-statusbar-height: 24px;
+  --forge-titlebar-height: 38px;
+  --forge-breadcrumbs-height: 28px;
+  --forge-tab-height: 32px;
+
+  /* Fonts */
+  --forge-font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --forge-font-code: "JetBrains Mono", "SF Mono", "Fira Code", Menlo, Monaco, monospace;
+
+  /* Font sizes */
+  --forge-font-size-xs: 11px;
+  --forge-font-size-sm: 12px;
+  --forge-font-size-md: 13px;
+  --forge-font-size-lg: 14px;
+
+  /* Radii */
+  --forge-radius-sm: 4px;
+  --forge-radius-md: 6px;
+  --forge-radius-lg: 8px;
+
+  /* Shadows */
+  --forge-shadow-palette: 0 16px 36px rgba(0, 0, 0, 0.55), 0 3px 8px rgba(0, 0, 0, 0.35);
+  --forge-shadow-menu: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
 [data-theme="graphite-dark"] {
   /* Surfaces */
   --forge-bg-app: #121316;
@@ -37,6 +108,7 @@
   --forge-accent: #388bfd;
   --forge-accent-hover: #58a6ff;
   --forge-accent-subtle: rgba(56, 139, 253, 0.12);
+  --forge-tab-active-border: #388bfd;
   --forge-success: #3fb950;
   --forge-warning: #d29922;
   --forge-error: #f85149;

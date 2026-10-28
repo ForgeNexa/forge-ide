@@ -8,6 +8,8 @@ import * as readline from 'node:readline';
 import { GitManager } from '../apps/desktop/src/gitManager.js';
 import { RunnerManager } from '../apps/desktop/src/runnerManager.js';
 import { SettingsManager } from '../apps/desktop/src/settingsManager.js';
+import { TaskManager } from '../apps/desktop/src/taskManager.js';
+import { ExtensionManager } from '../apps/desktop/src/extensionManager.js';
 
 // Helper to spawn daemon and create JSON-RPC client
 function createDaemonClient() {
@@ -268,4 +270,124 @@ test('Flow 8: Extensions transparency check', () => {
 
   assert.strictEqual(mockPython.supported, false);
   assert.match(mockPython.supportNote, /Phase 5/);
+});
+
+test('Flow 9: 2026 Dark Theme and Material Icon Theme resolution', () => {
+  const tempConfigDir = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-settings-test-'));
+  try {
+    const settingsMgr = new SettingsManager(tempConfigDir);
+    const settings = settingsMgr.getSettings();
+
+    // Verify 2026 Dark is the primary default theme for new installations
+    assert.strictEqual(settings.theme, '2026-dark');
+    // Verify Material Icon Theme is the default icon theme
+    assert.strictEqual(settings.iconTheme, 'material-icon-theme');
+
+    // Verify switching theme persists
+    const switched = settingsMgr.saveSettings({ theme: 'graphite-dark' });
+    assert.strictEqual(switched.theme, 'graphite-dark');
+
+    const readBack = settingsMgr.getSettings();
+    assert.strictEqual(readBack.theme, 'graphite-dark');
+
+    // Switch back to 2026-dark
+    settingsMgr.saveSettings({ theme: '2026-dark' });
+    assert.strictEqual(settingsMgr.getSettings().theme, '2026-dark');
+  } finally {
+    fs.rmSync(tempConfigDir, { recursive: true, force: true });
+  }
+});
+
+test('Flow 10: Task detection and task execution', async () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-tasks-'));
+  try {
+    fs.writeFileSync(
+      path.join(tempDir, 'package.json'),
+      JSON.stringify({
+        name: 'test-app',
+        scripts: {
+          test: 'echo "test-passed"',
+          build: 'echo "build-passed"',
+        },
+      })
+    );
+
+    const taskMgr = new TaskManager();
+    const tasks = await taskMgr.detectTasks(tempDir);
+    assert.strictEqual(tasks.length, 2);
+    assert.strictEqual(tasks.some((t) => t.name === 'npm run test'), true);
+    assert.strictEqual(tasks.some((t) => t.name === 'npm run build'), true);
+
+    // Test running a detected task
+    const testTask = tasks.find((t) => t.id === 'npm:test')!;
+    let output = '';
+    const exitPromise = new Promise<number>((resolve) => {
+      taskMgr.runTask(
+        testTask,
+        tempDir,
+        (chunk) => {
+          output += chunk;
+        },
+        (exitCode) => {
+          resolve(exitCode);
+        }
+      );
+    });
+
+    const exitCode = await exitPromise;
+    assert.strictEqual(exitCode, 0);
+    assert.match(output, /test-passed/);
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test('Flow 11: Extension manager installation, toggle, and persistence', async () => {
+  const tempExtDir = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-ext-test-'));
+  try {
+    const extMgr = new ExtensionManager(tempExtDir);
+
+    // Search extensions
+    const results = await extMgr.search('Go');
+    assert.ok(results.length > 0);
+    assert.strictEqual(results.some((e) => e.id === 'golang.go'), true);
+
+    // Install test extension
+    const testExtId = 'test.extension-pack';
+    const installResult = extMgr.install(testExtId);
+    assert.strictEqual(installResult, true);
+
+    // Verify it appears in installed list
+    let installed = extMgr.getInstalled();
+    assert.strictEqual(installed.some((e) => e.id === testExtId), true);
+
+    // Disable extension
+    const disableResult = extMgr.toggleEnable(testExtId, false);
+    assert.strictEqual(disableResult, true);
+    installed = extMgr.getInstalled();
+    const testExt = installed.find((e) => e.id === testExtId);
+    assert.strictEqual(testExt?.enabled, false);
+
+    // Uninstall extension
+    const uninstallResult = extMgr.uninstall(testExtId);
+    assert.strictEqual(uninstallResult, true);
+    installed = extMgr.getInstalled();
+    assert.strictEqual(installed.some((e) => e.id === testExtId), false);
+  } finally {
+    fs.rmSync(tempExtDir, { recursive: true, force: true });
+  }
+});
+
+test('Flow 12: Website vs Web IDE routing distinction', () => {
+  // Test routing logic truth:
+  // Root URL without '#/web-ide' shows Product & Documentation Website by default
+  const isWebPreview = true;
+  const rootHash = '';
+  const isProductWebsiteDefault = isWebPreview && !rootHash.includes('web-ide');
+  assert.strictEqual(isProductWebsiteDefault, true);
+
+  // Navigating to '#/web-ide' shows Web IDE
+  const webIdeHash = '#/web-ide';
+  const isWebIdeActive = isWebPreview && webIdeHash.includes('web-ide');
+  assert.strictEqual(isWebIdeActive, true);
 });

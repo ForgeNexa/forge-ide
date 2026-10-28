@@ -51,6 +51,25 @@ const api: MyForgeAPI = {
   },
 
   runFile: (filePath: string) => ipcRenderer.invoke('runner:runFile', filePath),
+  taskDetect: () => ipcRenderer.invoke('task:detect'),
+  taskRun: (task: any) => ipcRenderer.invoke('task:run', task),
+  taskKill: (taskId: string) => ipcRenderer.invoke('task:kill', taskId),
+  onTaskOutput: (callback: (taskId: string, chunk: string) => void) => {
+    const handler = (_: any, taskId: string, chunk: string) => callback(taskId, chunk);
+    ipcRenderer.on('task:output', handler);
+    return () => ipcRenderer.removeListener('task:output', handler);
+  },
+  onTaskExit: (callback: (taskId: string, exitCode: number) => void) => {
+    const handler = (_: any, taskId: string, exitCode: number) => callback(taskId, exitCode);
+    ipcRenderer.on('task:exit', handler);
+    return () => ipcRenderer.removeListener('task:exit', handler);
+  },
+
+  extensionSearch: (query: string) => ipcRenderer.invoke('extension:search', query),
+  extensionInstall: (id: string) => ipcRenderer.invoke('extension:install', id),
+  extensionUninstall: (id: string) => ipcRenderer.invoke('extension:uninstall', id),
+  extensionToggleEnable: (id: string, enabled: boolean) => ipcRenderer.invoke('extension:toggleEnable', id, enabled),
+  extensionGetInstalled: () => ipcRenderer.invoke('extension:getInstalled'),
 
   getSettings: () => ipcRenderer.invoke('settings:get'),
   saveSettings: (settings: any) => ipcRenderer.invoke('settings:save', settings),

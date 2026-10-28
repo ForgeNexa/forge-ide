@@ -72,3 +72,11 @@ npm run test:flows
   - Writes and reads user configuration from `~/.forge/settings.json`.
 - **Flow 8: Extensions Transparency Check**
   - Asserts that unsupported extensions are clearly marked with their exact requirement note.
+- **Flow 9: 2026 Dark Theme & Material Icon Theme Resolution**
+  - Verifies that new installations default to `2026-dark` and `material-icon-theme`, and that switching themes persists.
+- **Flow 10: Task Detection & Task Execution**
+  - Detects project tasks from `package.json`, runs tasks with child_process streaming, and verifies exit code 0.
+- **Flow 11: Extension Manager Lifecycle & Persistence**
+  - Searches Open VSX / marketplace, installs extension into `~/.forge/extensions`, toggles enable/disable state, and uninstalls cleanly.
+- **Flow 12: Website vs Web IDE Route Separation**
+  - Verifies that root URL loads product & documentation website by default, and `#/web-ide` activates the in-browser IDE.

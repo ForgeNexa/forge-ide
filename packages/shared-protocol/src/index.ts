@@ -111,7 +111,8 @@ export interface RunResult {
 
 // Settings & Preferences (Google Antigravity IDE style)
 export interface ForgeSettings {
-  theme: 'graphite-dark' | 'sand-light';
+  theme: '2026-dark' | 'graphite-dark' | 'sand-light';
+  iconTheme: 'material-icon-theme' | 'minimal';
   fontSize: number;
   fontFamily: string;
   tabSize: number;
@@ -136,6 +137,26 @@ export interface ForgeSettings {
   terminalPosition: 'sidebar' | 'bottom';
 }
 
+// Diagnostic marker for Problems tab
+export interface DiagnosticMarker {
+  id: string;
+  file: string;
+  line: number;
+  col: number;
+  severity: 'error' | 'warning' | 'info';
+  message: string;
+  source: string;
+}
+
+// Detected Project Task
+export interface ProjectTask {
+  id: string;
+  name: string;
+  command: string;
+  source: string;
+  status: 'idle' | 'running' | 'success' | 'failed';
+}
+
 // Extension metadata
 export interface ExtensionItem {
   id: string;
@@ -148,6 +169,10 @@ export interface ExtensionItem {
   supported: boolean;
   supportNote: string;
   installed: boolean;
+  enabled?: boolean;
+  iconUrl?: string;
+  downloads?: number;
+  rating?: number;
 }
 
 // Window API interface exposed via Electron preload contextBridge
@@ -200,8 +225,20 @@ export interface MyForgeAPI {
   onTerminalData: (callback: (id: string, data: string) => void) => () => void;
   onTerminalExit: (callback: (id: string, exitCode: number) => void) => () => void;
 
-  // Run File
+  // Run File & Tasks
   runFile: (filePath: string) => Promise<RunResult>;
+  taskDetect: () => Promise<ProjectTask[]>;
+  taskRun: (task: ProjectTask) => Promise<{ taskId: string }>;
+  taskKill: (taskId: string) => Promise<boolean>;
+  onTaskOutput: (callback: (taskId: string, chunk: string) => void) => () => void;
+  onTaskExit: (callback: (taskId: string, exitCode: number) => void) => () => void;
+
+  // Extensions
+  extensionSearch: (query: string) => Promise<ExtensionItem[]>;
+  extensionInstall: (id: string) => Promise<boolean>;
+  extensionUninstall: (id: string) => Promise<boolean>;
+  extensionToggleEnable: (id: string, enabled: boolean) => Promise<boolean>;
+  extensionGetInstalled: () => Promise<ExtensionItem[]>;
 
   // Settings & Workspaces
   getSettings: () => Promise<ForgeSettings>;

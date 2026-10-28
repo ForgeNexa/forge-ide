@@ -9,7 +9,7 @@ interface StatusBarProps {
   cursorCol: number;
   activeLanguage: string;
   encoding: string;
-  theme: 'graphite-dark' | 'sand-light';
+  theme: '2026-dark' | 'graphite-dark' | 'sand-light';
   indexStats: IndexStats | null;
   health: SystemHealth | null;
   onToggleTheme: () => void;

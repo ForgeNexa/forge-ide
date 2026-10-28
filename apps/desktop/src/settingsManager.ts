@@ -4,7 +4,8 @@ import * as os from 'node:os';
 import { ForgeSettings } from '@my-forge/shared-protocol';
 
 const defaultSettings: ForgeSettings = {
-  theme: 'graphite-dark',
+  theme: '2026-dark',
+  iconTheme: 'material-icon-theme',
   fontSize: 13,
   fontFamily: 'JetBrains Mono, Menlo, Monaco, monospace',
   tabSize: 2,
@@ -30,8 +31,8 @@ export class SettingsManager {
   private settingsFile: string;
   private recentFile: string;
 
-  constructor() {
-    this.configDir = path.join(os.homedir(), '.forge');
+  constructor(customConfigDir?: string) {
+    this.configDir = customConfigDir || path.join(os.homedir(), '.forge');
     this.settingsFile = path.join(this.configDir, 'settings.json');
     this.recentFile = path.join(this.configDir, 'recent.json');
     this.ensureDir();

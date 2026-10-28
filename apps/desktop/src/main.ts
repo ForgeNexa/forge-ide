@@ -5,6 +5,8 @@ import { GitManager } from './gitManager';
 import { TerminalManager } from './terminalManager';
 import { RunnerManager } from './runnerManager';
 import { SettingsManager } from './settingsManager';
+import { TaskManager } from './taskManager';
+import { ExtensionManager } from './extensionManager';
 
 let mainWindow: BrowserWindow | null = null;
 let currentWorkspace = process.cwd();
@@ -14,6 +16,8 @@ const git = new GitManager();
 const runner = new RunnerManager();
 const settings = new SettingsManager();
 const terminal = new TerminalManager(() => mainWindow);
+const taskManager = new TaskManager();
+const extensionManager = new ExtensionManager();
 
 async function createWindow() {
   mainWindow = new BrowserWindow({
@@ -152,9 +156,41 @@ function registerIPCHandlers() {
     terminal.close(id);
   });
 
-  // Runner
+  // Runner & Tasks
   ipcMain.handle('runner:runFile', async (_, filePath: string) => {
     return runner.runFile(filePath, currentWorkspace);
+  });
+  ipcMain.handle('task:detect', async () => {
+    return taskManager.detectTasks(currentWorkspace);
+  });
+  ipcMain.handle('task:run', async (_, task: any) => {
+    const taskId = taskManager.runTask(
+      task,
+      currentWorkspace,
+      (chunk) => mainWindow?.webContents.send('task:output', taskId, chunk),
+      (exitCode) => mainWindow?.webContents.send('task:exit', taskId, exitCode)
+    );
+    return { taskId };
+  });
+  ipcMain.handle('task:kill', async (_, taskId: string) => {
+    return taskManager.killTask(taskId);
+  });
+
+  // Extensions
+  ipcMain.handle('extension:search', async (_, query: string) => {
+    return extensionManager.search(query);
+  });
+  ipcMain.handle('extension:install', async (_, id: string) => {
+    return extensionManager.install(id);
+  });
+  ipcMain.handle('extension:uninstall', async (_, id: string) => {
+    return extensionManager.uninstall(id);
+  });
+  ipcMain.handle('extension:toggleEnable', async (_, id: string, enabled: boolean) => {
+    return extensionManager.toggleEnable(id, enabled);
+  });
+  ipcMain.handle('extension:getInstalled', async () => {
+    return extensionManager.getInstalled();
   });
 
   // Settings

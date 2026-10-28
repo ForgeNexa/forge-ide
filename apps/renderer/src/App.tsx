@@ -20,13 +20,14 @@ import { GitSidebar } from './components/GitSidebar';
 import { SearchSidebar } from './components/SearchSidebar';
 import { ExtensionsSidebar } from './components/ExtensionsSidebar';
 import { TerminalSidebar } from './components/TerminalSidebar';
-import { ReleaseShowcase } from './components/ReleaseShowcase';
+import { ProductLandingPage } from './components/ProductLandingPage';
 import { UnsavedChangesModal } from './components/UnsavedChangesModal';
 import { SettingsModal } from './components/SettingsModal';
 import './styles/app.css';
 
 const defaultSettings: ForgeSettings = {
-  theme: 'graphite-dark',
+  theme: '2026-dark',
+  iconTheme: 'material-icon-theme',
   fontSize: 13,
   fontFamily: 'JetBrains Mono, Menlo, Monaco, monospace',
   tabSize: 2,
@@ -76,15 +77,39 @@ export const App: FC = () => {
   // Layout states
   const [activeView, setActiveView] = useState<ActivityView | null>('explorer');
   const [showBottomPanel, setShowBottomPanel] = useState(true);
-  const [showReleasePage, setShowReleasePage] = useState<boolean>(() => {
+  const isWebPreview = !window.myForgeAPI;
+
+  const [showProductWebsite, setShowProductWebsite] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
+      if (!window.myForgeAPI) {
+        // On Web (GitHub Pages / browser): show Product Website by default unless #/web-ide is in URL
+        return (
+          !window.location.hash.includes('web-ide') &&
+          !window.location.pathname.includes('/web-ide')
+        );
+      }
       return (
         window.location.hash.includes('showcase') ||
-        window.location.hash.includes('release')
+        window.location.hash.includes('release') ||
+        window.location.hash.includes('docs')
       );
     }
     return false;
   });
+
+  // Listen to hash changes for smooth navigation
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (!window.myForgeAPI) {
+        setShowProductWebsite(
+          !window.location.hash.includes('web-ide') &&
+          !window.location.pathname.includes('/web-ide')
+        );
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   // Modals
   const [showCommandPalette, setShowCommandPalette] = useState(false);
@@ -96,8 +121,6 @@ export const App: FC = () => {
 
   // Cursor indicator
   const [cursorPos, setCursorPos] = useState({ line: 1, col: 1 });
-
-  const isWebPreview = !window.myForgeAPI;
 
   const appendLog = useCallback((msg: string) => {
     const timestamp = new Date().toLocaleTimeString();
@@ -702,7 +725,7 @@ export const App: FC = () => {
     { id: 'toggle-sidebar', label: 'Toggle Primary Sidebar', category: 'View', shortcut: 'Cmd+B', action: () => setActiveView((v) => (v ? null : 'explorer')) },
     { id: 'toggle-terminal-sidebar', label: 'Toggle Sidebar Terminal', category: 'View', shortcut: 'Ctrl+`', action: () => setActiveView((v) => (v === 'terminal' ? null : 'terminal')) },
     { id: 'toggle-panel', label: 'Toggle Bottom Panel', category: 'View', shortcut: 'Cmd+J', action: () => setShowBottomPanel((p) => !p) },
-    { id: 'toggle-showcase', label: showReleasePage ? 'Back to Editor' : 'Features & Release Showcase', category: 'Help', action: () => setShowReleasePage((prev) => !prev) },
+    { id: 'toggle-docs', label: showProductWebsite ? 'Return to IDE Workspace' : 'Open Product Website & Docs', category: 'Help', action: () => setShowProductWebsite((prev) => !prev) },
   ];
 
   const pendingCloseTab = tabs.find((t) => t.id === pendingCloseTabId);
@@ -710,9 +733,27 @@ export const App: FC = () => {
   return (
     <div className="forge-app">
       {/* Web preview banner */}
-      {isWebPreview && (
+      {isWebPreview && !showProductWebsite && (
         <div className="forge-web-banner">
-          <span>🌐 Web Preview Mode — For local filesystem access, native Git, and real PTY terminal, launch the desktop app with: <code>npm start</code></span>
+          <span>🌐 Forge Web IDE (Sandbox Preview) — For full native Go daemon indexing, real PTY terminal, and filesystem access, launch the desktop app with: <code>npm start</code></span>
+          <button
+            onClick={() => {
+              window.location.hash = '#/';
+              setShowProductWebsite(true);
+            }}
+            style={{
+              marginLeft: 12,
+              background: 'transparent',
+              border: '1px solid currentColor',
+              color: 'inherit',
+              borderRadius: 4,
+              padding: '2px 8px',
+              fontSize: '11px',
+              cursor: 'pointer',
+            }}
+          >
+            ← Product Website & Docs
+          </button>
         </div>
       )}
 
@@ -720,7 +761,7 @@ export const App: FC = () => {
       <div className="forge-titlebar">
         <div className="forge-titlebar-left">
           <span>forge</span>
-          <span className="forge-badge">v0.2.0</span>
+          <span className="forge-badge">v0.3.0</span>
           {workspaceRoot && (
             <span style={{ opacity: 0.8, marginLeft: 4 }}>
               — {workspaceRoot.split('/').filter(Boolean).pop()}
@@ -742,9 +783,9 @@ export const App: FC = () => {
         <div className="forge-titlebar-right">
           <button
             style={{
-              background: showReleasePage ? 'var(--forge-accent)' : 'rgba(56, 139, 253, 0.12)',
-              color: showReleasePage ? '#ffffff' : 'var(--forge-accent)',
-              border: '1px solid rgba(56, 139, 253, 0.3)',
+              background: showProductWebsite ? 'var(--forge-accent)' : 'rgba(41, 122, 160, 0.15)',
+              color: showProductWebsite ? '#ffffff' : 'var(--forge-accent)',
+              border: '1px solid rgba(41, 122, 160, 0.3)',
               padding: '3px 10px',
               borderRadius: '12px',
               fontSize: '11px',
@@ -757,11 +798,16 @@ export const App: FC = () => {
               outline: 'none',
               transition: 'all 0.15s ease',
             }}
-            onClick={() => setShowReleasePage((prev) => !prev)}
-            title="View Release Showcase, Live Demos & Architecture"
+            onClick={() => {
+              if (isWebPreview) {
+                window.location.hash = showProductWebsite ? '#/web-ide' : '#/';
+              }
+              setShowProductWebsite((prev) => !prev);
+            }}
+            title="View Product Website, Documentation & Guides"
           >
-            <span>🚀</span>
-            <span>{showReleasePage ? 'Back to Editor' : 'Features & Release'}</span>
+            <span>{showProductWebsite ? '💻' : '🌐'}</span>
+            <span>{showProductWebsite ? 'Back to Editor' : isWebPreview ? 'Product Site' : 'Website & Docs'}</span>
           </button>
           <span>Yantra Works</span>
         </div>
@@ -770,16 +816,24 @@ export const App: FC = () => {
       {/* Main Workbench Layout */}
       <div className="forge-workbench">
         <ActivityBar
-          activeView={showReleasePage ? null : activeView}
+          activeView={showProductWebsite ? null : activeView}
           onSelectView={(v) => {
-            setShowReleasePage(false);
+            setShowProductWebsite(false);
             setActiveView((prev) => (prev === v ? null : v));
           }}
           onOpenSettings={() => setShowSettingsModal(true)}
         />
 
-        {showReleasePage ? (
-          <ReleaseShowcase onLaunchEditor={() => setShowReleasePage(false)} />
+        {showProductWebsite ? (
+          <ProductLandingPage
+            isDesktop={!isWebPreview}
+            onOpenWebIDE={() => {
+              if (isWebPreview) {
+                window.location.hash = '#/web-ide';
+              }
+              setShowProductWebsite(false);
+            }}
+          />
         ) : (
           <>
             {activeView === 'explorer' && (
@@ -787,6 +841,7 @@ export const App: FC = () => {
                 workspaceRoot={workspaceRoot}
                 files={files}
                 selectedPath={activeTab?.relativePath || null}
+                iconTheme={settings.iconTheme}
                 onSelectFile={handleSelectFile}
                 onOpenFolder={handleOpenFolder}
                 onRefresh={refreshWorkspace}
@@ -895,7 +950,12 @@ export const App: FC = () => {
         health={health}
         onToggleTheme={() =>
           handleUpdateSettings({
-            theme: settings.theme === 'graphite-dark' ? 'sand-light' : 'graphite-dark',
+            theme:
+              settings.theme === '2026-dark'
+                ? 'graphite-dark'
+                : settings.theme === 'graphite-dark'
+                ? 'sand-light'
+                : '2026-dark',
           })
         }
         onToggleBottomPanel={() => setShowBottomPanel((p) => !p)}
@@ -914,6 +974,7 @@ export const App: FC = () => {
         onClose={() => setShowQuickOpen(false)}
         onSelectFile={(file) => handleSelectFile(file)}
         searchFiles={searchWorkspaceFiles}
+        iconTheme={settings.iconTheme}
       />
 
       <UnsavedChangesModal

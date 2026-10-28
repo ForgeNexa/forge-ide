@@ -5,7 +5,7 @@ import '@xterm/xterm/css/xterm.css';
 
 interface TerminalTabProps {
   cwd: string;
-  theme: 'graphite-dark' | 'sand-light';
+  theme: '2026-dark' | 'graphite-dark' | 'sand-light';
 }
 
 export const TerminalTab: FC<TerminalTabProps> = ({ cwd, theme }) => {
@@ -27,6 +27,13 @@ export const TerminalTab: FC<TerminalTabProps> = ({ cwd, theme }) => {
               foreground: '#1f2328',
               cursor: '#0969da',
               selectionBackground: '#d0e2ff',
+            }
+          : theme === '2026-dark'
+          ? {
+              background: '#191A1B',
+              foreground: '#bfbfbf',
+              cursor: '#bfbfbf',
+              selectionBackground: '#27678280',
             }
           : {
               background: '#141518',

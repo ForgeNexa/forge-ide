@@ -3,6 +3,7 @@ import Editor, { DiffEditor, OnMount } from '@monaco-editor/react';
 import { ForgeSettings } from '@my-forge/shared-protocol';
 import { IconClose, IconFolder, IconFile } from './Icons';
 import { Breadcrumbs } from './Breadcrumbs';
+import { MaterialIcon } from './MaterialIcon';
 
 export interface EditorTab {
   id: string;
@@ -62,6 +63,39 @@ export const EditorArea: FC<EditorAreaProps> = ({
   const handleEditorDidMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
 
+    // Define authentic 2026 Dark theme (mrleemurray.theme-2026 / 2026-dark.json)
+    monaco.editor.defineTheme('forge-2026-dark', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [
+        { token: 'comment', foreground: '8b949e', fontStyle: 'italic' },
+        { token: 'keyword', foreground: 'ff7b72' },
+        { token: 'storage', foreground: 'ff7b72' },
+        { token: 'string', foreground: 'a5d6ff' },
+        { token: 'number', foreground: '79c0ff' },
+        { token: 'constant', foreground: '79c0ff' },
+        { token: 'type', foreground: '79c0ff' },
+        { token: 'function', foreground: 'd2a8ff' },
+        { token: 'variable', foreground: 'ffa657' },
+        { token: 'tag', foreground: '7ee787' },
+      ],
+      colors: {
+        'editor.background': '#121314',
+        'editor.foreground': '#BBBEBF',
+        'editorLineNumber.foreground': '#858889',
+        'editorLineNumber.activeForeground': '#BBBEBF',
+        'editorCursor.foreground': '#BBBEBF',
+        'editor.selectionBackground': '#276782dd',
+        'editor.inactiveSelectionBackground': '#27678260',
+        'editor.selectionHighlightBackground': '#27678260',
+        'editor.lineHighlightBackground': '#242526',
+        'editorIndentGuide.background': '#8384854D',
+        'editorIndentGuide.activeBackground': '#838485',
+        'editorBracketMatch.background': '#3994BC55',
+        'editorBracketMatch.border': '#2A2B2C',
+      },
+    });
+
     // Define custom Graphite Dark theme matching CodeEdit design tokens
     monaco.editor.defineTheme('forge-graphite-dark', {
       base: 'vs-dark',
@@ -88,6 +122,14 @@ export const EditorArea: FC<EditorAreaProps> = ({
       },
     });
 
+    const activeTheme =
+      settings.theme === 'sand-light'
+        ? 'vs'
+        : settings.theme === 'graphite-dark'
+        ? 'forge-graphite-dark'
+        : 'forge-2026-dark';
+    monaco.editor.setTheme(activeTheme);
+
     editor.onDidChangeCursorPosition((e) => {
       onCursorChange(e.position.lineNumber, e.position.column);
     });
@@ -99,7 +141,12 @@ export const EditorArea: FC<EditorAreaProps> = ({
 
   useEffect(() => {
     if (editorRef.current) {
-      const monacoTheme = settings.theme === 'sand-light' ? 'vs' : 'forge-graphite-dark';
+      const monacoTheme =
+        settings.theme === 'sand-light'
+          ? 'vs'
+          : settings.theme === 'graphite-dark'
+          ? 'forge-graphite-dark'
+          : 'forge-2026-dark';
       // @ts-ignore
       window.monaco?.editor?.setTheme(monacoTheme);
     }
@@ -123,7 +170,9 @@ export const EditorArea: FC<EditorAreaProps> = ({
                   onCloseOthers(tab.id);
                 }
               }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
             >
+              <MaterialIcon fileName={tab.title} size={14} iconTheme={settings.iconTheme} />
               <span>{tab.title}</span>
               {tab.isDirty ? (
                 <div className="forge-tab-dirty" title="Unsaved changes" />
@@ -161,6 +210,7 @@ export const EditorArea: FC<EditorAreaProps> = ({
         <Breadcrumbs
           workspaceRoot={workspaceRoot}
           activePath={activeTab.relativePath}
+          iconTheme={settings.iconTheme}
           onRunFile={onRunFile}
           isRunning={isRunning}
         />
@@ -175,7 +225,13 @@ export const EditorArea: FC<EditorAreaProps> = ({
               original={activeTab.diffOriginal || ''}
               modified={activeTab.diffModified || ''}
               language={activeTab.languageId || 'plaintext'}
-              theme={settings.theme === 'sand-light' ? 'vs' : 'forge-graphite-dark'}
+              theme={
+                settings.theme === 'sand-light'
+                  ? 'vs'
+                  : settings.theme === 'graphite-dark'
+                  ? 'forge-graphite-dark'
+                  : 'forge-2026-dark'
+              }
               options={{
                 fontSize: settings.fontSize,
                 fontFamily: settings.fontFamily,
@@ -189,7 +245,13 @@ export const EditorArea: FC<EditorAreaProps> = ({
               height="100%"
               language={activeTab.languageId || 'plaintext'}
               value={activeTab.content}
-              theme={settings.theme === 'sand-light' ? 'vs' : 'forge-graphite-dark'}
+              theme={
+                settings.theme === 'sand-light'
+                  ? 'vs'
+                  : settings.theme === 'graphite-dark'
+                  ? 'forge-graphite-dark'
+                  : 'forge-2026-dark'
+              }
               onChange={(val) => onContentChange(activeTab.id, val || '')}
               onMount={handleEditorDidMount}
               options={{

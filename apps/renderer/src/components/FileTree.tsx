@@ -8,11 +8,13 @@ import {
   IconRefresh,
   IconPlus,
 } from './Icons';
+import { MaterialIcon } from './MaterialIcon';
 
 interface FileTreeProps {
   workspaceRoot: string;
   files: FileEntry[];
   selectedPath: string | null;
+  iconTheme?: 'material-icon-theme' | 'minimal';
   onSelectFile: (file: FileEntry) => void;
   onOpenFolder: () => void;
   onRefresh: () => void;
@@ -34,6 +36,7 @@ export const FileTree: FC<FileTreeProps> = ({
   workspaceRoot,
   files,
   selectedPath,
+  iconTheme = 'material-icon-theme',
   onSelectFile,
   onOpenFolder,
   onRefresh,
@@ -205,16 +208,23 @@ export const FileTree: FC<FileTreeProps> = ({
                   {file.isDir ? (
                     <>
                       {expandedDirs[file.relativePath] ? <IconChevronDown /> : <IconChevronRight />}
-                      <span style={{ color: 'var(--forge-warning)' }}>
-                        <IconFolder />
-                      </span>
+                      <MaterialIcon
+                        fileName={file.name}
+                        isDir={true}
+                        isOpen={Boolean(expandedDirs[file.relativePath])}
+                        size={15}
+                        iconTheme={iconTheme}
+                      />
                     </>
                   ) : (
                     <>
                       <span style={{ width: 11 }} />
-                      <span style={{ color: 'var(--forge-text-muted)' }}>
-                        <IconFile />
-                      </span>
+                      <MaterialIcon
+                        fileName={file.name}
+                        isDir={false}
+                        size={15}
+                        iconTheme={iconTheme}
+                      />
                     </>
                   )}
 

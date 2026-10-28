@@ -1,9 +1,11 @@
 import { type FC } from 'react';
-import { IconFile, IconPlay } from './Icons';
+import { IconPlay } from './Icons';
+import { MaterialIcon } from './MaterialIcon';
 
 interface BreadcrumbsProps {
   workspaceRoot: string;
   activePath: string | null;
+  iconTheme?: 'material-icon-theme' | 'minimal';
   onRunFile?: () => void;
   isRunning?: boolean;
 }
@@ -11,6 +13,7 @@ interface BreadcrumbsProps {
 export const Breadcrumbs: FC<BreadcrumbsProps> = ({
   workspaceRoot,
   activePath,
+  iconTheme = 'material-icon-theme',
   onRunFile,
   isRunning,
 }) => {
@@ -34,7 +37,7 @@ export const Breadcrumbs: FC<BreadcrumbsProps> = ({
           <span key={idx} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             {idx === parts.length - 1 ? (
               <>
-                <IconFile />
+                <MaterialIcon fileName={part} size={14} iconTheme={iconTheme} />
                 <span style={{ fontWeight: 600, color: 'var(--forge-text-primary)' }}>{part}</span>
               </>
             ) : (

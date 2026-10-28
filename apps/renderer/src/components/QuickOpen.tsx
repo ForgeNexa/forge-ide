@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef, type FC, type KeyboardEvent } from 'react';
 import { FileEntry } from '@my-forge/shared-protocol';
-import { IconFile } from './Icons';
+import { MaterialIcon } from './MaterialIcon';
+import { IconSearch } from './Icons';
 
 interface QuickOpenProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectFile: (file: FileEntry) => void;
   searchFiles: (query: string) => Promise<FileEntry[]>;
+  iconTheme?: 'material-icon-theme' | 'minimal';
 }
 
 export const QuickOpen: FC<QuickOpenProps> = ({
@@ -14,6 +16,7 @@ export const QuickOpen: FC<QuickOpenProps> = ({
   onClose,
   onSelectFile,
   searchFiles,
+  iconTheme = 'material-icon-theme',
 }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<FileEntry[]>([]);
@@ -66,7 +69,7 @@ export const QuickOpen: FC<QuickOpenProps> = ({
     <div className="forge-modal-backdrop" onClick={onClose}>
       <div className="forge-palette" onClick={(e) => e.stopPropagation()}>
         <div className="forge-palette-input-wrap">
-          <IconFile />
+          <IconSearch />
           <input
             ref={inputRef}
             className="forge-palette-input"
@@ -91,7 +94,8 @@ export const QuickOpen: FC<QuickOpenProps> = ({
                   onClose();
                 }}
               >
-                <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <MaterialIcon fileName={file.name} isDir={file.isDir} size={15} iconTheme={iconTheme} />
                   <span style={{ fontWeight: 500, marginRight: 8 }}>{file.name}</span>
                   <span className="forge-palette-meta">{file.relativePath}</span>
                 </div>

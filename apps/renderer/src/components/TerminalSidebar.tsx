@@ -4,7 +4,7 @@ import { IconTerminal, IconRefresh } from './Icons';
 
 interface TerminalSidebarProps {
   cwd: string;
-  theme: 'graphite-dark' | 'sand-light';
+  theme: '2026-dark' | 'graphite-dark' | 'sand-light';
   onMoveToBottom?: () => void;
 }
 

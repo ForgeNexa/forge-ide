@@ -205,7 +205,7 @@ export const SettingsModal: FC<SettingsModalProps> = ({
                   <div>
                     <div style={{ fontWeight: 500, fontSize: '12px' }}>Color Theme</div>
                     <div style={{ fontSize: '11px', color: 'var(--forge-text-muted)' }}>
-                      Restrained, distraction-free design palette
+                      Official 2026 Dark and CodeEdit design palettes
                     </div>
                   </div>
                   <select
@@ -213,8 +213,26 @@ export const SettingsModal: FC<SettingsModalProps> = ({
                     value={settings.theme}
                     onChange={(e) => onUpdateSettings({ theme: e.target.value as any })}
                   >
+                    <option value="2026-dark">2026 Dark (Default — mrleemurray.theme-2026)</option>
                     <option value="graphite-dark">Graphite Dark (CodeEdit Reference)</option>
                     <option value="sand-light">Sand Light (Crisp Contrast)</option>
+                  </select>
+                </div>
+
+                <div className="forge-settings-row">
+                  <div>
+                    <div style={{ fontWeight: 500, fontSize: '12px' }}>File & Folder Icon Theme</div>
+                    <div style={{ fontSize: '11px', color: 'var(--forge-text-muted)' }}>
+                      Recognizable glyphs for languages, configs & folders
+                    </div>
+                  </div>
+                  <select
+                    className="forge-select"
+                    value={settings.iconTheme || 'material-icon-theme'}
+                    onChange={(e) => onUpdateSettings({ iconTheme: e.target.value as any })}
+                  >
+                    <option value="material-icon-theme">Material Icon Theme (Default)</option>
+                    <option value="minimal">Minimal Icons</option>
                   </select>
                 </div>
 
