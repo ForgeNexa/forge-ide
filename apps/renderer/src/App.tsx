@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, type FC, type MouseEvent } from 'react';
+import { useState, useEffect, useCallback, useRef, lazy, Suspense, type FC, type MouseEvent } from 'react';
 import {
   FileEntry,
   IndexStats,
@@ -21,10 +21,16 @@ import { QuickOpen } from './components/QuickOpen';
 import { GitSidebar } from './components/GitSidebar';
 import { SearchSidebar } from './components/SearchSidebar';
 import { ExtensionsSidebar } from './components/ExtensionsSidebar';
-import { ProductLandingPage } from './components/ProductLandingPage';
 import { UnsavedChangesModal } from './components/UnsavedChangesModal';
-import { SettingsModal } from './components/SettingsModal';
 import './styles/app.css';
+
+// Lazy-loaded heavy components (deferred until requested to optimize initial startup)
+const ProductLandingPage = lazy(() =>
+  import('./components/ProductLandingPage').then((m) => ({ default: m.ProductLandingPage }))
+);
+const SettingsModal = lazy(() =>
+  import('./components/SettingsModal').then((m) => ({ default: m.SettingsModal }))
+);
 
 export const App: FC = () => {
   // Settings & Theme
@@ -883,15 +889,17 @@ export const App: FC = () => {
         />
 
         {showProductWebsite ? (
-          <ProductLandingPage
-            isDesktop={!isWebPreview}
-            onOpenWebIDE={() => {
-              if (isWebPreview) {
-                window.location.hash = '#/web-ide';
-              }
-              setShowProductWebsite(false);
-            }}
-          />
+          <Suspense fallback={<div style={{ flex: 1, background: 'var(--forge-bg-app)' }} />}>
+            <ProductLandingPage
+              isDesktop={!isWebPreview}
+              onOpenWebIDE={() => {
+                if (isWebPreview) {
+                  window.location.hash = '#/web-ide';
+                }
+                setShowProductWebsite(false);
+              }}
+            />
+          </Suspense>
         ) : (
           <>
             {activeView === 'explorer' && (
@@ -1061,12 +1069,16 @@ export const App: FC = () => {
         }}
       />
 
-      <SettingsModal
-        isOpen={showSettingsModal}
-        onClose={() => setShowSettingsModal(false)}
-        settings={settings}
-        onUpdateSettings={handleUpdateSettings}
-      />
+      {showSettingsModal && (
+        <Suspense fallback={null}>
+          <SettingsModal
+            isOpen={showSettingsModal}
+            onClose={() => setShowSettingsModal(false)}
+            settings={settings}
+            onUpdateSettings={handleUpdateSettings}
+          />
+        </Suspense>
+      )}
     </div>
   );
 };

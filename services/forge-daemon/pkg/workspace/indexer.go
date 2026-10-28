@@ -474,7 +474,13 @@ func (idx *Indexer) WriteFile(relOrAbsPath string, content string) error {
 		return err
 	}
 
-	return os.WriteFile(target, []byte(content), 0644)
+	if err := os.WriteFile(target, []byte(content), 0644); err != nil {
+		return err
+	}
+
+	rel, _ := filepath.Rel(idx.GetWorkspaceRoot(), target)
+	idx.updateCacheFile(rel, target, false, int64(len(content)))
+	return nil
 }
 
 // CreateFile creates a new file at relPath with optional initial content.
@@ -493,7 +499,13 @@ func (idx *Indexer) CreateFile(relPath string, content string) error {
 		return err
 	}
 
-	return os.WriteFile(target, []byte(content), 0644)
+	if err := os.WriteFile(target, []byte(content), 0644); err != nil {
+		return err
+	}
+
+	rel, _ := filepath.Rel(idx.GetWorkspaceRoot(), target)
+	idx.updateCacheFile(rel, target, false, int64(len(content)))
+	return nil
 }
 
 // CreateFolder creates a new directory at relPath.
@@ -503,7 +515,13 @@ func (idx *Indexer) CreateFolder(relPath string) error {
 		return err
 	}
 
-	return os.MkdirAll(target, 0755)
+	if err := os.MkdirAll(target, 0755); err != nil {
+		return err
+	}
+
+	rel, _ := filepath.Rel(idx.GetWorkspaceRoot(), target)
+	idx.updateCacheFile(rel, target, true, 0)
+	return nil
 }
 
 // RenameEntry renames or moves a file or folder inside the workspace.
@@ -531,7 +549,12 @@ func (idx *Indexer) RenameEntry(oldRelPath string, newRelPath string) error {
 		return err
 	}
 
-	return os.Rename(oldTarget, newTarget)
+	if err := os.Rename(oldTarget, newTarget); err != nil {
+		return err
+	}
+
+	idx.renameCacheEntry(oldRelPath, newRelPath, newTarget)
+	return nil
 }
 
 // DeleteEntry deletes a file or directory tree inside the workspace.
@@ -549,7 +572,100 @@ func (idx *Indexer) DeleteEntry(relPath string) error {
 		return errors.New("cannot delete the workspace root directory")
 	}
 
-	return os.RemoveAll(target)
+	if err := os.RemoveAll(target); err != nil {
+		return err
+	}
+
+	idx.deleteCacheEntry(relPath)
+	return nil
+}
+
+// updateCacheFile adds or updates an entry in the in-memory index cache.
+func (idx *Indexer) updateCacheFile(rel string, abs string, isDir bool, size int64) {
+	idx.mu.Lock()
+	defer idx.mu.Unlock()
+
+	cleanRel := filepath.Clean(rel)
+	cleanAbs := filepath.Clean(abs)
+	name := filepath.Base(cleanRel)
+
+	lang := ""
+	if !isDir {
+		lang = DetectLanguage(name)
+	}
+
+	entry := FileEntry{
+		RelativePath: cleanRel,
+		AbsolutePath: cleanAbs,
+		Name:         name,
+		IsDir:        isDir,
+		Size:         size,
+		ModTime:      time.Now(),
+		LanguageID:   lang,
+	}
+
+	for i, f := range idx.files {
+		if f.RelativePath == cleanRel {
+			idx.files[i] = entry
+			return
+		}
+	}
+
+	idx.files = append(idx.files, entry)
+	if isDir {
+		idx.stats.TotalDirs++
+	} else {
+		idx.stats.TotalFiles++
+	}
+}
+
+// deleteCacheEntry removes an entry and its children from the in-memory index cache.
+func (idx *Indexer) deleteCacheEntry(rel string) {
+	idx.mu.Lock()
+	defer idx.mu.Unlock()
+
+	cleanRel := filepath.Clean(rel)
+	prefix := cleanRel + string(filepath.Separator)
+
+	filtered := idx.files[:0]
+	for _, f := range idx.files {
+		if f.RelativePath == cleanRel || strings.HasPrefix(f.RelativePath, prefix) {
+			if f.IsDir {
+				idx.stats.TotalDirs--
+			} else {
+				idx.stats.TotalFiles--
+			}
+			continue
+		}
+		filtered = append(filtered, f)
+	}
+	idx.files = filtered
+}
+
+// renameCacheEntry updates paths for an entry and its children in the in-memory index cache.
+func (idx *Indexer) renameCacheEntry(oldRel string, newRel string, newAbs string) {
+	idx.mu.Lock()
+	defer idx.mu.Unlock()
+
+	cleanOld := filepath.Clean(oldRel)
+	cleanNew := filepath.Clean(newRel)
+	oldPrefix := cleanOld + string(filepath.Separator)
+
+	for i, f := range idx.files {
+		if f.RelativePath == cleanOld {
+			idx.files[i].RelativePath = cleanNew
+			idx.files[i].AbsolutePath = filepath.Clean(newAbs)
+			idx.files[i].Name = filepath.Base(cleanNew)
+			if !idx.files[i].IsDir {
+				idx.files[i].LanguageID = DetectLanguage(idx.files[i].Name)
+			}
+		} else if strings.HasPrefix(f.RelativePath, oldPrefix) {
+			subRel := strings.TrimPrefix(f.RelativePath, oldPrefix)
+			idx.files[i].RelativePath = filepath.Join(cleanNew, subRel)
+			idx.files[i].AbsolutePath = filepath.Join(newAbs, subRel)
+			idx.files[i].Name = filepath.Base(idx.files[i].RelativePath)
+		}
+	}
 }
 
 // DetectLanguage maps file extensions/names to Monaco language identifiers.
