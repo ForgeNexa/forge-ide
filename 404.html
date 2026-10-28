@@ -1,116 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
-    <!-- Primary Meta Tags -->
-    <title>Forge IDE — Fast, Lightweight Open Source Code Editor & IDE by Yantra Works</title>
-    <meta name="title" content="Forge IDE — Fast, Lightweight Open Source Code Editor & IDE by Yantra Works" />
-    <meta name="description" content="Forge (my-forge) is a fast, lightweight, distraction-free desktop & web IDE powered by Monaco Editor, a native Go workspace daemon, and local-first AI autocomplete. Built for developers by Yantra Works." />
-    <meta name="keywords" content="forge, forge ide, my-forge, yantra works, code editor, lightweight ide, vs code alternative, monaco editor, go daemon, web ide, local ai autocomplete, developer tools, open source ide" />
-    <meta name="author" content="Yantra Works" />
-    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-    <meta name="theme-color" content="#121314" />
-    <link rel="canonical" href="https://manish-npx.github.io/forge/" />
-
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://manish-npx.github.io/forge/" />
-    <meta property="og:title" content="Forge IDE — Fast, Lightweight Open Source Code Editor & IDE" />
-    <meta property="og:description" content="A fast, distraction-free IDE combining Monaco Editor, a high-performance Go backend daemon, and local-first AI autocomplete. Open source under the MIT License." />
-    <meta property="og:site_name" content="Forge IDE" />
-    <meta property="og:locale" content="en_US" />
-    <meta property="og:image" content="https://manish-npx.github.io/forge/og-preview.png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Forge IDE — Your workspace for building software" />
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://manish-npx.github.io/forge/" />
-    <meta name="twitter:title" content="Forge IDE — Fast, Lightweight Open Source Code Editor & IDE" />
-    <meta name="twitter:description" content="A fast, distraction-free IDE combining Monaco Editor, a high-performance Go backend daemon, and local-first AI autocomplete." />
-    <meta name="twitter:image" content="https://manish-npx.github.io/forge/og-preview.png" />
-    <meta name="twitter:image:alt" content="Forge IDE screenshot and workspace preview" />
-
-    <!-- Favicon & Touch Icons -->
-    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <link rel="alternate icon" href="./favicon.ico" />
-
-    <!-- Schema.org JSON-LD Structured Data -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "SoftwareApplication",
-          "@id": "https://manish-npx.github.io/forge/#software",
-          "name": "Forge IDE",
-          "alternateName": ["my-forge", "Forge"],
-          "description": "A fast, lightweight, distraction-free desktop and web IDE combining Monaco Editor, a native Go workspace daemon, and local-first AI code completion.",
-          "applicationCategory": "DeveloperApplication",
-          "operatingSystem": "macOS, Windows, Linux, Web",
-          "softwareVersion": "0.2.0",
-          "url": "https://manish-npx.github.io/forge/",
-          "downloadUrl": "https://github.com/manish-npx/forge/releases/tag/v0.2.0",
-          "license": "https://github.com/manish-npx/forge/blob/main/LICENSE",
-          "author": {
-            "@type": "Organization",
-            "name": "Yantra Works",
-            "url": "https://github.com/manish-npx"
-          },
-          "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "USD"
-          },
-          "featureList": [
-            "Native Go workspace daemon for sub-millisecond file indexing",
-            "Monaco Editor integration with 2026 Dark Theme and Material Icon Theme",
-            "IntelliJ-style multi-tab bottom tool window (Terminal, Output, Problems, Debug, Tasks, Tests)",
-            "Local-first AI autocomplete powered by Ollama FIM models",
-            "Multi-language support across 22 programming languages with background linters",
-            "Complete Git version control workflow with side-by-side diffing",
-            "Zero mandatory cloud accounts or proprietary telemetry"
-          ]
-        },
-        {
-          "@type": "WebSite",
-          "@id": "https://manish-npx.github.io/forge/#website",
-          "url": "https://manish-npx.github.io/forge/",
-          "name": "Forge IDE",
-          "description": "Your workspace for building software. Fast, lightweight desktop & web code editor by Yantra Works.",
-          "publisher": {
-            "@type": "Organization",
-            "name": "Yantra Works",
-            "url": "https://github.com/manish-npx"
-          }
-        }
-      ]
-    }
-    </script>
-    <!-- GitHub Pages Single Page App Redirect Receiver -->
+    <meta charset="utf-8">
+    <title>Forge IDE — Redirecting...</title>
     <script>
-      (function(l) {
-        if (l.search[1] === '/' ) {
-          var decoded = l.search.slice(1).split('&').map(function(s) { 
-            return s.replace(/~and~/g, '&');
-          }).join('?');
-          window.history.replaceState(null, null,
-              l.pathname.slice(0, -1) + decoded + l.hash
-          );
-        }
-      }(window.location));
+      // Single Page Apps for GitHub Pages
+      // MIT License
+      // https://github.com/rafgraph/spa-github-pages
+      // This script takes the current url and converts the path and query
+      // string into just a query string, and then redirects the browser
+      // to the new url with only a query string and hash fragment
+      var pathSegmentsToKeep = 1;
+
+      var l = window.location;
+      l.replace(
+        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+        l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
+        l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+        l.hash
+      );
     </script>
-    <script type="module" crossorigin src="./assets/index-hsf60WGI.js"></script>
-    <link rel="modulepreload" crossorigin href="./assets/vendor-monaco-D0ysAp3l.js">
-    <link rel="modulepreload" crossorigin href="./assets/vendor-react-BsK1gAK9.js">
-    <link rel="modulepreload" crossorigin href="./assets/vendor-xterm-D1D2FVe3.js">
-    <link rel="stylesheet" crossorigin href="./assets/vendor-monaco-CKqkwT9V.css">
-    <link rel="stylesheet" crossorigin href="./assets/index-DuNIX1_m.css">
   </head>
   <body>
-    <div id="root"></div>
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #121314; color: #cbd5e1; text-align: center;">
+      <h1 style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">Redirecting to Forge IDE...</h1>
+      <p style="font-size: 14px; color: #8b949e;">If you are not redirected automatically, <a href="/forge/" style="color: #297AA0;">click here to launch Forge</a>.</p>
+    </div>
   </body>
 </html>
