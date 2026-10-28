@@ -16,13 +16,18 @@
     "dev:all": "concurrently -k -p \"[{name}]\" -n \"DAEMON,RENDER,DESKTOP\" -c \"cyan,blue,magenta\" \"cd services/forge-daemon && go run cmd/forge-daemon/main.go\" \"npm run dev --workspace=@my-forge/renderer\" \"wait-on tcp:5173 && npm run dev --workspace=@my-forge/desktop\"",
     "build": "npm run build --workspace=@my-forge/shared-protocol && npm run build --workspace=@my-forge/design-system && npm run build --workspace=@my-forge/renderer && npm run build --workspace=@my-forge/desktop && npm run build:daemon",
     "build:daemon": "cd services/forge-daemon && go build -o bin/forge-daemon cmd/forge-daemon/main.go",
-    "test": "npm run test:go && npm run test:ts",
+    "test": "npm run test:go && npm run test:ts && npm run test:flows",
     "test:go": "cd services/forge-daemon && go test -v -race ./...",
-    "test:ts": "npm run test --workspace=@my-forge/shared-protocol"
+    "test:ts": "npm run test --workspace=@my-forge/shared-protocol",
+    "test:flows": "tsx --test tests/functional_flows.test.ts"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
+    "tsx": "^4.23.15",
     "typescript": "^5.8.2",
     "wait-on": "^8.0.2"
+  },
+  "dependencies": {
+    "node-pty": "^1.1.0"
   }
 }

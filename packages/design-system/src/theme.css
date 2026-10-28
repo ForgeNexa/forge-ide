@@ -1,54 +1,61 @@
-/* my-forge — Design System Theme Tokens
+/* forge — CodeEdit-Inspired Design System Theme Tokens
    By Yantra Works
 */
 
 :root,
 [data-theme="graphite-dark"] {
-  /* Surface colors */
-  --forge-bg-app: #121417;
-  --forge-bg-activitybar: #0e1012;
-  --forge-bg-sidebar: #16181c;
-  --forge-bg-editor: #141619;
-  --forge-bg-tabbar: #101215;
-  --forge-bg-tab-active: #181b20;
-  --forge-bg-tab-inactive: #101215;
-  --forge-bg-panel: #131518;
-  --forge-bg-statusbar: #0d0f11;
-  --forge-bg-input: #1a1d22;
-  --forge-bg-dialog: #191c21;
+  /* Surfaces */
+  --forge-bg-app: #121316;
+  --forge-bg-titlebar: #18191d;
+  --forge-bg-activitybar: #141518;
+  --forge-bg-sidebar: #17181c;
+  --forge-bg-editor: #151619;
+  --forge-bg-breadcrumbs: #17181b;
+  --forge-bg-tabbar: #131417;
+  --forge-bg-tab-active: #191b1f;
+  --forge-bg-tab-inactive: #131417;
+  --forge-bg-panel: #141518;
+  --forge-bg-statusbar: #111215;
+  --forge-bg-input: #1a1c20;
+  --forge-bg-dialog: #1a1c21;
   --forge-bg-hover: rgba(255, 255, 255, 0.05);
   --forge-bg-active: rgba(255, 255, 255, 0.08);
+  --forge-bg-selection: #23344d;
 
   /* Borders */
-  --forge-border: #22262d;
-  --forge-border-subtle: #1c1f24;
+  --forge-border: #24262b;
+  --forge-border-subtle: #1c1d22;
   --forge-border-focus: #388bfd;
 
-  /* Typography & text */
+  /* Text & Labels */
   --forge-text-primary: #e6edf3;
-  --forge-text-secondary: #adbac7;
-  --forge-text-muted: #768390;
+  --forge-text-secondary: #9ea7b3;
+  --forge-text-muted: #6e7681;
   --forge-text-disabled: #484f58;
 
-  /* Accent & status */
+  /* Accent & Status Colors */
   --forge-accent: #388bfd;
   --forge-accent-hover: #58a6ff;
-  --forge-accent-subtle: rgba(56, 139, 253, 0.15);
+  --forge-accent-subtle: rgba(56, 139, 253, 0.12);
   --forge-success: #3fb950;
   --forge-warning: #d29922;
   --forge-error: #f85149;
-  --forge-badge-bg: #2d333b;
+  --forge-git-added: #3fb950;
+  --forge-git-modified: #e3b341;
+  --forge-git-deleted: #f85149;
+  --forge-badge-bg: #272a30;
 
   /* Dimensions */
-  --forge-activitybar-width: 48px;
-  --forge-sidebar-width: 260px;
+  --forge-activitybar-width: 44px;
+  --forge-sidebar-width: 250px;
   --forge-statusbar-height: 24px;
-  --forge-titlebar-height: 36px;
-  --forge-tab-height: 35px;
+  --forge-titlebar-height: 38px;
+  --forge-breadcrumbs-height: 28px;
+  --forge-tab-height: 32px;
 
-  /* Font families */
-  --forge-font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --forge-font-code: "JetBrains Mono", "Fira Code", Menlo, Monaco, "Courier New", monospace;
+  /* Fonts */
+  --forge-font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --forge-font-code: "JetBrains Mono", "SF Mono", "Fira Code", Menlo, Monaco, monospace;
 
   /* Font sizes */
   --forge-font-size-xs: 11px;
@@ -57,29 +64,32 @@
   --forge-font-size-lg: 14px;
 
   /* Radii */
-  --forge-radius-sm: 3px;
+  --forge-radius-sm: 4px;
   --forge-radius-md: 6px;
   --forge-radius-lg: 8px;
 
   /* Shadows */
-  --forge-shadow-palette: 0 12px 32px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
-  --forge-shadow-menu: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --forge-shadow-palette: 0 16px 36px rgba(0, 0, 0, 0.55), 0 3px 8px rgba(0, 0, 0, 0.35);
+  --forge-shadow-menu: 0 6px 18px rgba(0, 0, 0, 0.45);
 }
 
 [data-theme="sand-light"] {
-  --forge-bg-app: #f6f8fa;
-  --forge-bg-activitybar: #eaeef2;
-  --forge-bg-sidebar: #f3f5f7;
+  --forge-bg-app: #f4f5f7;
+  --forge-bg-titlebar: #e9ebf0;
+  --forge-bg-activitybar: #eaecef;
+  --forge-bg-sidebar: #f0f2f5;
   --forge-bg-editor: #ffffff;
-  --forge-bg-tabbar: #ebf0f4;
+  --forge-bg-breadcrumbs: #f6f8fa;
+  --forge-bg-tabbar: #e5e8ed;
   --forge-bg-tab-active: #ffffff;
-  --forge-bg-tab-inactive: #ebf0f4;
-  --forge-bg-panel: #f6f8fa;
+  --forge-bg-tab-inactive: #e5e8ed;
+  --forge-bg-panel: #f3f5f8;
   --forge-bg-statusbar: #0969da;
   --forge-bg-input: #ffffff;
   --forge-bg-dialog: #ffffff;
   --forge-bg-hover: rgba(0, 0, 0, 0.04);
   --forge-bg-active: rgba(0, 0, 0, 0.08);
+  --forge-bg-selection: #d0e2ff;
 
   --forge-border: #d0d7de;
   --forge-border-subtle: #e1e4e8;
@@ -96,13 +106,16 @@
   --forge-success: #1a7f37;
   --forge-warning: #9a6700;
   --forge-error: #cf222e;
+  --forge-git-added: #1a7f37;
+  --forge-git-modified: #9a6700;
+  --forge-git-deleted: #cf222e;
   --forge-badge-bg: #e1e4e8;
 
-  --forge-shadow-palette: 0 12px 32px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08);
-  --forge-shadow-menu: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --forge-shadow-palette: 0 16px 36px rgba(0, 0, 0, 0.15), 0 3px 8px rgba(0, 0, 0, 0.08);
+  --forge-shadow-menu: 0 6px 18px rgba(0, 0, 0, 0.12);
 }
 
-/* Reset and base styles */
+/* Reset and base */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -125,10 +138,10 @@ input, textarea, select, button {
   font-size: inherit;
 }
 
-/* Scrollbar customization */
+/* Clean scrollbars */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -136,10 +149,10 @@ input, textarea, select, button {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(120, 120, 120, 0.2);
-  border-radius: 5px;
+  background: rgba(140, 140, 140, 0.25);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(120, 120, 120, 0.4);
+  background: rgba(140, 140, 140, 0.45);
 }

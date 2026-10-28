@@ -11,6 +11,8 @@
     "@monaco-editor/react": "^4.7.0",
     "@my-forge/design-system": "*",
     "@my-forge/shared-protocol": "*",
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/xterm": "^6.0.0",
     "monaco-editor": "^0.52.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

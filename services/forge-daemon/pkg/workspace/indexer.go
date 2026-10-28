@@ -1,11 +1,13 @@
 package workspace
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -16,9 +18,13 @@ var (
 	ErrPathTraversalDenied = errors.New("access denied: path escapes workspace boundaries")
 	ErrFileNotFound        = errors.New("file not found")
 	ErrFileTooLarge        = errors.New("file exceeds max permitted size (10MB)")
+	ErrDestinationExists   = errors.New("destination already exists")
 )
 
-const MaxFileSize = 10 * 1024 * 1024 // 10MB limit for in-memory editor loading
+const (
+	MaxFileSize       = 10 * 1024 * 1024 // 10MB limit for in-memory editor loading
+	MaxSearchFileSize = 2 * 1024 * 1024  // 2MB limit for text content search
+)
 
 // Default ignored directories & patterns
 var defaultIgnoredDirs = map[string]bool{
@@ -48,14 +54,33 @@ type FileEntry struct {
 
 // IndexStats holds statistics from the indexing run.
 type IndexStats struct {
-	TotalFiles      int           `json:"totalFiles"`
-	TotalDirs       int           `json:"totalDirs"`
-	DurationMs      int64         `json:"durationMs"`
-	LastIndexedAt   time.Time     `json:"lastIndexedAt"`
-	WorkspaceRoot   string        `json:"workspaceRoot"`
+	TotalFiles    int       `json:"totalFiles"`
+	TotalDirs     int       `json:"totalDirs"`
+	DurationMs    int64     `json:"durationMs"`
+	LastIndexedAt time.Time `json:"lastIndexedAt"`
+	WorkspaceRoot string    `json:"workspaceRoot"`
 }
 
-// Indexer manages workspace file scanning and search.
+// ContentSearchMatch represents a line match in a file.
+type ContentSearchMatch struct {
+	RelativePath string `json:"relativePath"`
+	AbsolutePath string `json:"absolutePath"`
+	Line         int    `json:"line"`
+	Column       int    `json:"column"`
+	LineText     string `json:"lineText"`
+	MatchLength  int    `json:"matchLength"`
+}
+
+// ContentSearchResult represents the aggregate result of a workspace text search.
+type ContentSearchResult struct {
+	Query        string               `json:"query"`
+	Matches      []ContentSearchMatch `json:"matches"`
+	TotalMatches int                  `json:"totalMatches"`
+	FileCount    int                  `json:"fileCount"`
+	DurationMs   int64                `json:"durationMs"`
+}
+
+// Indexer manages workspace file scanning, search, and filesystem CRUD.
 type Indexer struct {
 	mu            sync.RWMutex
 	workspaceRoot string
@@ -208,6 +233,127 @@ func (idx *Indexer) SearchFiles(query string, limit int) []FileEntry {
 	return results
 }
 
+// SearchContent scans files line-by-line for the specified text pattern.
+func (idx *Indexer) SearchContent(query string, caseSensitive bool, wholeWord bool, maxMatches int) ContentSearchResult {
+	idx.mu.RLock()
+	filesToScan := make([]FileEntry, len(idx.files))
+	copy(filesToScan, idx.files)
+	root := idx.workspaceRoot
+	idx.mu.RUnlock()
+
+	start := time.Now()
+	res := ContentSearchResult{
+		Query:   query,
+		Matches: make([]ContentSearchMatch, 0),
+	}
+
+	if strings.TrimSpace(query) == "" || root == "" {
+		return res
+	}
+
+	if maxMatches <= 0 {
+		maxMatches = 250
+	}
+
+	var matchRegex *regexp.Regexp
+	var needle string
+	if wholeWord {
+		pattern := `\b` + regexp.QuoteMeta(query) + `\b`
+		if !caseSensitive {
+			pattern = `(?i)` + pattern
+		}
+		var err error
+		matchRegex, err = regexp.Compile(pattern)
+		if err != nil {
+			return res
+		}
+	} else if !caseSensitive {
+		needle = strings.ToLower(query)
+	} else {
+		needle = query
+	}
+
+	matchedFilesMap := make(map[string]bool)
+
+	for _, file := range filesToScan {
+		if file.IsDir || file.Size > MaxSearchFileSize || file.Size == 0 {
+			continue
+		}
+
+		f, err := os.Open(file.AbsolutePath)
+		if err != nil {
+			continue
+		}
+
+		scanner := bufio.NewScanner(f)
+		lineNum := 1
+
+		for scanner.Scan() {
+			lineText := scanner.Text()
+
+			if matchRegex != nil {
+				locs := matchRegex.FindAllStringIndex(lineText, -1)
+				for _, loc := range locs {
+					res.Matches = append(res.Matches, ContentSearchMatch{
+						RelativePath: file.RelativePath,
+						AbsolutePath: file.AbsolutePath,
+						Line:         lineNum,
+						Column:       loc[0] + 1,
+						LineText:     strings.TrimSpace(lineText),
+						MatchLength:  loc[1] - loc[0],
+					})
+					matchedFilesMap[file.RelativePath] = true
+					if len(res.Matches) >= maxMatches {
+						break
+					}
+				}
+			} else {
+				targetLine := lineText
+				if !caseSensitive {
+					targetLine = strings.ToLower(lineText)
+				}
+
+				startCol := 0
+				for {
+					idxFound := strings.Index(targetLine[startCol:], needle)
+					if idxFound == -1 {
+						break
+					}
+					col := startCol + idxFound + 1
+					res.Matches = append(res.Matches, ContentSearchMatch{
+						RelativePath: file.RelativePath,
+						AbsolutePath: file.AbsolutePath,
+						Line:         lineNum,
+						Column:       col,
+						LineText:     strings.TrimSpace(lineText),
+						MatchLength:  len(query),
+					})
+					matchedFilesMap[file.RelativePath] = true
+					if len(res.Matches) >= maxMatches {
+						break
+					}
+					startCol += idxFound + len(needle)
+				}
+			}
+
+			if len(res.Matches) >= maxMatches {
+				break
+			}
+			lineNum++
+		}
+		_ = f.Close()
+
+		if len(res.Matches) >= maxMatches {
+			break
+		}
+	}
+
+	res.TotalMatches = len(res.Matches)
+	res.FileCount = len(matchedFilesMap)
+	res.DurationMs = time.Since(start).Milliseconds()
+	return res
+}
+
 // ListDirectory lists contents of a relative path inside the workspace.
 func (idx *Indexer) ListDirectory(relPath string) ([]FileEntry, error) {
 	idx.mu.RLock()
@@ -265,8 +411,8 @@ func (idx *Indexer) ListDirectory(relPath string) ([]FileEntry, error) {
 	return results, nil
 }
 
-// ReadFile safely reads file content within workspace boundaries.
-func (idx *Indexer) ReadFile(relOrAbsPath string) (string, error) {
+// resolveSafePath verifies that relOrAbsPath does not escape workspaceRoot.
+func (idx *Indexer) resolveSafePath(relOrAbsPath string) (string, error) {
 	idx.mu.RLock()
 	root := idx.workspaceRoot
 	idx.mu.RUnlock()
@@ -284,6 +430,16 @@ func (idx *Indexer) ReadFile(relOrAbsPath string) (string, error) {
 
 	if !strings.HasPrefix(target, root) {
 		return "", ErrPathTraversalDenied
+	}
+
+	return target, nil
+}
+
+// ReadFile safely reads file content within workspace boundaries.
+func (idx *Indexer) ReadFile(relOrAbsPath string) (string, error) {
+	target, err := idx.resolveSafePath(relOrAbsPath)
+	if err != nil {
+		return "", err
 	}
 
 	info, err := os.Stat(target)
@@ -307,23 +463,9 @@ func (idx *Indexer) ReadFile(relOrAbsPath string) (string, error) {
 
 // WriteFile safely writes file content within workspace boundaries.
 func (idx *Indexer) WriteFile(relOrAbsPath string, content string) error {
-	idx.mu.RLock()
-	root := idx.workspaceRoot
-	idx.mu.RUnlock()
-
-	if root == "" {
-		return ErrWorkspaceNotSet
-	}
-
-	var target string
-	if filepath.IsAbs(relOrAbsPath) {
-		target = filepath.Clean(relOrAbsPath)
-	} else {
-		target = filepath.Clean(filepath.Join(root, relOrAbsPath))
-	}
-
-	if !strings.HasPrefix(target, root) {
-		return ErrPathTraversalDenied
+	target, err := idx.resolveSafePath(relOrAbsPath)
+	if err != nil {
+		return err
 	}
 
 	// Ensure parent dir exists
@@ -333,6 +475,81 @@ func (idx *Indexer) WriteFile(relOrAbsPath string, content string) error {
 	}
 
 	return os.WriteFile(target, []byte(content), 0644)
+}
+
+// CreateFile creates a new file at relPath with optional initial content.
+func (idx *Indexer) CreateFile(relPath string, content string) error {
+	target, err := idx.resolveSafePath(relPath)
+	if err != nil {
+		return err
+	}
+
+	if _, err := os.Stat(target); err == nil {
+		return ErrDestinationExists
+	}
+
+	parent := filepath.Dir(target)
+	if err := os.MkdirAll(parent, 0755); err != nil {
+		return err
+	}
+
+	return os.WriteFile(target, []byte(content), 0644)
+}
+
+// CreateFolder creates a new directory at relPath.
+func (idx *Indexer) CreateFolder(relPath string) error {
+	target, err := idx.resolveSafePath(relPath)
+	if err != nil {
+		return err
+	}
+
+	return os.MkdirAll(target, 0755)
+}
+
+// RenameEntry renames or moves a file or folder inside the workspace.
+func (idx *Indexer) RenameEntry(oldRelPath string, newRelPath string) error {
+	oldTarget, err := idx.resolveSafePath(oldRelPath)
+	if err != nil {
+		return err
+	}
+
+	newTarget, err := idx.resolveSafePath(newRelPath)
+	if err != nil {
+		return err
+	}
+
+	if _, err := os.Stat(oldTarget); err != nil {
+		return ErrFileNotFound
+	}
+
+	if _, err := os.Stat(newTarget); err == nil {
+		return ErrDestinationExists
+	}
+
+	parent := filepath.Dir(newTarget)
+	if err := os.MkdirAll(parent, 0755); err != nil {
+		return err
+	}
+
+	return os.Rename(oldTarget, newTarget)
+}
+
+// DeleteEntry deletes a file or directory tree inside the workspace.
+func (idx *Indexer) DeleteEntry(relPath string) error {
+	target, err := idx.resolveSafePath(relPath)
+	if err != nil {
+		return err
+	}
+
+	// Do not allow deleting the workspace root itself
+	idx.mu.RLock()
+	root := idx.workspaceRoot
+	idx.mu.RUnlock()
+	if target == root {
+		return errors.New("cannot delete the workspace root directory")
+	}
+
+	return os.RemoveAll(target)
 }
 
 // DetectLanguage maps file extensions/names to Monaco language identifiers.

@@ -1,20 +1,28 @@
 import { useState, type FC } from 'react';
 import { SystemHealth, DaemonInfo, IndexStats } from '@my-forge/shared-protocol';
+import { TerminalTab } from './TerminalTab';
+import { IconClose } from './Icons';
 
 interface BottomPanelProps {
+  cwd: string;
+  theme: 'graphite-dark' | 'sand-light';
   health: SystemHealth | null;
   daemonInfo: DaemonInfo | null;
   indexStats: IndexStats | null;
   logs: string[];
+  onClose: () => void;
 }
 
 export const BottomPanel: FC<BottomPanelProps> = ({
+  cwd,
+  theme,
   health,
   daemonInfo,
   indexStats,
   logs,
+  onClose,
 }) => {
-  const [activeTab, setActiveTab] = useState<'output' | 'health' | 'problems' | 'terminal'>('health');
+  const [activeTab, setActiveTab] = useState<'terminal' | 'output' | 'health' | 'problems'>('terminal');
 
   const formatBytes = (bytes: number) => {
     if (!bytes) return '0 B';
@@ -26,10 +34,10 @@ export const BottomPanel: FC<BottomPanelProps> = ({
     <div className="forge-panel">
       <div className="forge-panel-header">
         <button
-          className={`forge-panel-tab ${activeTab === 'health' ? 'active' : ''}`}
-          onClick={() => setActiveTab('health')}
+          className={`forge-panel-tab ${activeTab === 'terminal' ? 'active' : ''}`}
+          onClick={() => setActiveTab('terminal')}
         >
-          Go Daemon Health
+          Terminal
         </button>
         <button
           className={`forge-panel-tab ${activeTab === 'output' ? 'active' : ''}`}
@@ -44,14 +52,22 @@ export const BottomPanel: FC<BottomPanelProps> = ({
           Problems (0)
         </button>
         <button
-          className={`forge-panel-tab ${activeTab === 'terminal' ? 'active' : ''}`}
-          onClick={() => setActiveTab('terminal')}
+          className={`forge-panel-tab ${activeTab === 'health' ? 'active' : ''}`}
+          onClick={() => setActiveTab('health')}
         >
-          Terminal
+          Go Daemon Health
         </button>
+
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+          <button className="forge-icon-btn" title="Close Panel (Cmd+J)" onClick={onClose}>
+            <IconClose />
+          </button>
+        </div>
       </div>
 
-      <div className="forge-panel-body">
+      <div className="forge-panel-body" style={{ padding: activeTab === 'terminal' ? 0 : '10px 14px' }}>
+        {activeTab === 'terminal' && <TerminalTab cwd={cwd} theme={theme} />}
+
         {activeTab === 'health' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
             <div style={{ padding: '8px 12px', background: 'var(--forge-bg-hover)', borderRadius: '4px' }}>
@@ -88,26 +104,20 @@ export const BottomPanel: FC<BottomPanelProps> = ({
 
         {activeTab === 'output' && (
           <div>
-            {logs.map((log, idx) => (
-              <div key={idx} style={{ lineHeight: '1.6' }}>
-                {log}
-              </div>
-            ))}
+            {logs.length === 0 ? (
+              <div style={{ color: 'var(--forge-text-muted)' }}>No recent output.</div>
+            ) : (
+              logs.map((log, idx) => (
+                <div key={idx} style={{ lineHeight: '1.6', fontFamily: 'var(--forge-font-code)' }}>
+                  {log}
+                </div>
+              ))
+            )}
           </div>
         )}
 
         {activeTab === 'problems' && (
           <div style={{ color: 'var(--forge-text-muted)' }}>No problems have been detected in the workspace.</div>
-        )}
-
-        {activeTab === 'terminal' && (
-          <div>
-            <div style={{ color: 'var(--forge-text-muted)' }}>my-forge integrated developer terminal</div>
-            <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-              <span style={{ color: 'var(--forge-accent)' }}>yantra-works:~/workspace$</span>
-              <span>go version &amp;&amp; git status</span>
-            </div>
-          </div>
         )}
       </div>
     </div>

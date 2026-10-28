@@ -88,6 +88,43 @@ func TestIndexer_Lifecycle(t *testing.T) {
 	if err != nil || readBack != "hello world" {
 		t.Errorf("readBack failed or content mismatch: %v, %s", err, readBack)
 	}
+
+	// 8. Content search
+	searchRes := indexer.SearchContent("console.log", true, false, 10)
+	if searchRes.TotalMatches != 1 {
+		t.Errorf("expected 1 match for console.log, got %d", searchRes.TotalMatches)
+	}
+
+	// 9. CRUD: Create Folder, Create File, Rename, Delete
+	err = indexer.CreateFolder("src/nested")
+	if err != nil {
+		t.Fatalf("create folder failed: %v", err)
+	}
+
+	err = indexer.CreateFile("src/nested/file.txt", "initial content")
+	if err != nil {
+		t.Fatalf("create file failed: %v", err)
+	}
+
+	err = indexer.RenameEntry("src/nested/file.txt", "src/nested/file_renamed.txt")
+	if err != nil {
+		t.Fatalf("rename file failed: %v", err)
+	}
+
+	renamedContent, err := indexer.ReadFile("src/nested/file_renamed.txt")
+	if err != nil || renamedContent != "initial content" {
+		t.Errorf("failed to read renamed file: %v", err)
+	}
+
+	err = indexer.DeleteEntry("src/nested")
+	if err != nil {
+		t.Fatalf("delete entry failed: %v", err)
+	}
+
+	_, err = indexer.ReadFile("src/nested/file_renamed.txt")
+	if err == nil {
+		t.Errorf("expected deleted file to be not found")
+	}
 }
 
 func TestDetectLanguage(t *testing.T) {

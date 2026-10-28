@@ -169,6 +169,77 @@ func (s *Server) handleRequest(req *protocol.Request) *protocol.Response {
 		results := s.indexer.SearchFiles(p.Query, p.Limit)
 		resp.Result = results
 
+	case "workspace/searchContent":
+		var p struct {
+			Query         string `json:"query"`
+			CaseSensitive bool   `json:"caseSensitive"`
+			WholeWord     bool   `json:"wholeWord"`
+			MaxMatches    int    `json:"maxMatches"`
+		}
+		if len(req.Params) > 0 {
+			_ = json.Unmarshal(req.Params, &p)
+		}
+		results := s.indexer.SearchContent(p.Query, p.CaseSensitive, p.WholeWord, p.MaxMatches)
+		resp.Result = results
+
+	case "workspace/createFile":
+		var p struct {
+			Path    string `json:"path"`
+			Content string `json:"content"`
+		}
+		if err := json.Unmarshal(req.Params, &p); err != nil || p.Path == "" {
+			resp.Error = protocol.NewError(protocol.CodeInvalidParams, "Invalid params: 'path' required", nil)
+			return resp
+		}
+		if err := s.indexer.CreateFile(p.Path, p.Content); err != nil {
+			resp.Error = protocol.NewError(protocol.CodeInternalError, err.Error(), nil)
+			return resp
+		}
+		resp.Result = map[string]interface{}{"success": true, "path": p.Path}
+
+	case "workspace/createFolder":
+		var p struct {
+			Path string `json:"path"`
+		}
+		if err := json.Unmarshal(req.Params, &p); err != nil || p.Path == "" {
+			resp.Error = protocol.NewError(protocol.CodeInvalidParams, "Invalid params: 'path' required", nil)
+			return resp
+		}
+		if err := s.indexer.CreateFolder(p.Path); err != nil {
+			resp.Error = protocol.NewError(protocol.CodeInternalError, err.Error(), nil)
+			return resp
+		}
+		resp.Result = map[string]interface{}{"success": true, "path": p.Path}
+
+	case "workspace/renameEntry":
+		var p struct {
+			OldPath string `json:"oldPath"`
+			NewPath string `json:"newPath"`
+		}
+		if err := json.Unmarshal(req.Params, &p); err != nil || p.OldPath == "" || p.NewPath == "" {
+			resp.Error = protocol.NewError(protocol.CodeInvalidParams, "Invalid params: 'oldPath' and 'newPath' required", nil)
+			return resp
+		}
+		if err := s.indexer.RenameEntry(p.OldPath, p.NewPath); err != nil {
+			resp.Error = protocol.NewError(protocol.CodeInternalError, err.Error(), nil)
+			return resp
+		}
+		resp.Result = map[string]interface{}{"success": true, "oldPath": p.OldPath, "newPath": p.NewPath}
+
+	case "workspace/deleteEntry":
+		var p struct {
+			Path string `json:"path"`
+		}
+		if err := json.Unmarshal(req.Params, &p); err != nil || p.Path == "" {
+			resp.Error = protocol.NewError(protocol.CodeInvalidParams, "Invalid params: 'path' required", nil)
+			return resp
+		}
+		if err := s.indexer.DeleteEntry(p.Path); err != nil {
+			resp.Error = protocol.NewError(protocol.CodeInternalError, err.Error(), nil)
+			return resp
+		}
+		resp.Result = map[string]interface{}{"success": true, "path": p.Path}
+
 	case "workspace/readFile":
 		var p struct {
 			Path string `json:"path"`

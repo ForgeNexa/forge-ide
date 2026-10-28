@@ -1,9 +1,10 @@
-import type { FC } from 'react';
-import { IconGit, IconGoGopher } from './Icons';
+import { type FC } from 'react';
+import { IconGit, IconGoGopher, IconSettings } from './Icons';
 import { IndexStats, SystemHealth } from '@my-forge/shared-protocol';
 
 interface StatusBarProps {
   branch: string;
+  isGitRepo: boolean;
   cursorLine: number;
   cursorCol: number;
   activeLanguage: string;
@@ -13,10 +14,12 @@ interface StatusBarProps {
   health: SystemHealth | null;
   onToggleTheme: () => void;
   onToggleBottomPanel: () => void;
+  onOpenSettings: () => void;
 }
 
 export const StatusBar: FC<StatusBarProps> = ({
   branch,
+  isGitRepo,
   cursorLine,
   cursorCol,
   activeLanguage,
@@ -25,14 +28,22 @@ export const StatusBar: FC<StatusBarProps> = ({
   indexStats,
   onToggleTheme,
   onToggleBottomPanel,
+  onOpenSettings,
 }) => {
   return (
     <div className="forge-statusbar">
       <div className="forge-statusbar-left">
-        <div className="forge-status-item" title="Git Branch">
-          <IconGit />
-          <span>{branch}</span>
-        </div>
+        {isGitRepo ? (
+          <div className="forge-status-item" title="Git Branch">
+            <IconGit />
+            <span>{branch || 'main'}</span>
+          </div>
+        ) : (
+          <div className="forge-status-item" style={{ opacity: 0.6 }}>
+            <span>No Git</span>
+          </div>
+        )}
+
         <div
           className="forge-status-item forge-status-pill"
           title="Click to view Go daemon telemetry & health"
@@ -41,6 +52,7 @@ export const StatusBar: FC<StatusBarProps> = ({
           <IconGoGopher />
           <span>Go Daemon: Active</span>
         </div>
+
         {indexStats && (
           <div className="forge-status-item" style={{ fontSize: '11px', color: 'var(--forge-text-muted)' }}>
             <span>⚡ {indexStats.totalFiles} files in {indexStats.durationMs}ms</span>
@@ -58,8 +70,11 @@ export const StatusBar: FC<StatusBarProps> = ({
         <div className="forge-status-item" style={{ textTransform: 'capitalize' }}>
           <span>{activeLanguage}</span>
         </div>
+        <div className="forge-status-item" onClick={onOpenSettings} title="Preferences (Cmd+,)">
+          <IconSettings />
+        </div>
         <div className="forge-status-item" onClick={onToggleTheme} title="Switch Theme">
-          <span>{theme === 'graphite-dark' ? '🌙 Graphite' : '☀️ Sand'}</span>
+          <span>{theme === 'graphite-dark' ? '🌙' : '☀️'}</span>
         </div>
       </div>
     </div>

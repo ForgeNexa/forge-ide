@@ -162,6 +162,40 @@ export class DaemonManager {
     return this.call<FileEntry[]>('workspace/searchFiles', { query, limit });
   }
 
+  public async searchContent(
+    query: string,
+    options?: { isCaseSensitive?: boolean; isWholeWord?: boolean; maxMatches?: number }
+  ): Promise<any> {
+    return this.call('workspace/searchContent', {
+      query,
+      caseSensitive: options?.isCaseSensitive || false,
+      wholeWord: options?.isWholeWord || false,
+      maxMatches: options?.maxMatches || 250,
+    });
+  }
+
+  public async createFile(relPath: string, content = ''): Promise<{ success: boolean; path: string }> {
+    return this.call<{ success: boolean; path: string }>('workspace/createFile', { path: relPath, content });
+  }
+
+  public async createFolder(relPath: string): Promise<{ success: boolean; path: string }> {
+    return this.call<{ success: boolean; path: string }>('workspace/createFolder', { path: relPath });
+  }
+
+  public async renameEntry(
+    oldRelPath: string,
+    newRelPath: string
+  ): Promise<{ success: boolean; oldPath: string; newPath: string }> {
+    return this.call<{ success: boolean; oldPath: string; newPath: string }>('workspace/renameEntry', {
+      oldPath: oldRelPath,
+      newPath: newRelPath,
+    });
+  }
+
+  public async deleteEntry(relPath: string): Promise<{ success: boolean; path: string }> {
+    return this.call<{ success: boolean; path: string }>('workspace/deleteEntry', { path: relPath });
+  }
+
   public async readFile(filePath: string): Promise<{ path: string; content: string }> {
     return this.call<{ path: string; content: string }>('workspace/readFile', { path: filePath });
   }

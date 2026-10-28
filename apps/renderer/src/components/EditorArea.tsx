@@ -1,6 +1,8 @@
 import { useRef, useEffect, type FC, type MouseEvent } from 'react';
-import Editor, { OnMount } from '@monaco-editor/react';
-import { IconClose } from './Icons';
+import Editor, { DiffEditor, OnMount } from '@monaco-editor/react';
+import { ForgeSettings } from '@my-forge/shared-protocol';
+import { IconClose, IconFolder, IconFile } from './Icons';
+import { Breadcrumbs } from './Breadcrumbs';
 
 export interface EditorTab {
   id: string;
@@ -10,32 +12,49 @@ export interface EditorTab {
   originalContent: string;
   languageId: string;
   isDirty: boolean;
+  isDiff?: boolean;
+  diffOriginal?: string;
+  diffModified?: string;
 }
 
 interface EditorAreaProps {
+  workspaceRoot: string;
   tabs: EditorTab[];
   activeTabId: string | null;
-  theme: 'graphite-dark' | 'sand-light';
+  settings: ForgeSettings;
   onSelectTab: (id: string) => void;
   onCloseTab: (id: string, e: MouseEvent) => void;
+  onCloseOthers: (id: string) => void;
+  onCloseAll: () => void;
   onContentChange: (id: string, content: string) => void;
   onCursorChange: (line: number, col: number) => void;
   onSave: () => void;
   onOpenQuickOpen: () => void;
   onOpenCommandPalette: () => void;
+  onOpenFolder: () => void;
+  onOpenFile: () => void;
+  onRunFile?: () => void;
+  isRunning?: boolean;
 }
 
 export const EditorArea: FC<EditorAreaProps> = ({
+  workspaceRoot,
   tabs,
   activeTabId,
-  theme,
+  settings,
   onSelectTab,
   onCloseTab,
+  onCloseOthers,
+  onCloseAll,
   onContentChange,
   onCursorChange,
   onSave,
   onOpenQuickOpen,
   onOpenCommandPalette,
+  onOpenFolder,
+  onOpenFile,
+  onRunFile,
+  isRunning,
 }) => {
   const activeTab = tabs.find((t) => t.id === activeTabId);
   const editorRef = useRef<any>(null);
@@ -43,38 +62,36 @@ export const EditorArea: FC<EditorAreaProps> = ({
   const handleEditorDidMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
 
-    // Define custom Graphite Dark theme matching Yantra Works design tokens
+    // Define custom Graphite Dark theme matching CodeEdit design tokens
     monaco.editor.defineTheme('forge-graphite-dark', {
       base: 'vs-dark',
       inherit: true,
       rules: [
-        { token: 'comment', foreground: '768390', fontStyle: 'italic' },
-        { token: 'keyword', foreground: 'f47067' },
-        { token: 'string', foreground: '96d0ff' },
-        { token: 'number', foreground: '6cb6ff' },
-        { token: 'type', foreground: 'dcedf9' },
+        { token: 'comment', foreground: '6e7681', fontStyle: 'italic' },
+        { token: 'keyword', foreground: 'ff7b72' },
+        { token: 'string', foreground: 'a5d6ff' },
+        { token: 'number', foreground: '79c0ff' },
+        { token: 'type', foreground: 'd2a8ff' },
         { token: 'function', foreground: 'd2a8ff' },
       ],
       colors: {
-        'editor.background': '#141619',
+        'editor.background': '#151619',
         'editor.foreground': '#e6edf3',
         'editorLineNumber.foreground': '#484f58',
         'editorLineNumber.activeForeground': '#adbac7',
         'editorCursor.foreground': '#388bfd',
-        'editor.selectionBackground': '#264f78',
-        'editor.inactiveSelectionBackground': '#1f385c',
-        'editor.lineHighlightBackground': '#181b20',
-        'editorIndentGuide.background': '#21262d',
-        'editorIndentGuide.activeBackground': '#388bfd55',
+        'editor.selectionBackground': '#23344d',
+        'editor.inactiveSelectionBackground': '#1b263b',
+        'editor.lineHighlightBackground': '#18191d',
+        'editorIndentGuide.background': '#1f2227',
+        'editorIndentGuide.activeBackground': '#388bfd44',
       },
     });
 
-    // Cursor position changes
     editor.onDidChangeCursorPosition((e) => {
       onCursorChange(e.position.lineNumber, e.position.column);
     });
 
-    // Add Command/Ctrl+S save shortcut to Monaco
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
       onSave();
     });
@@ -82,11 +99,11 @@ export const EditorArea: FC<EditorAreaProps> = ({
 
   useEffect(() => {
     if (editorRef.current) {
-      const monacoTheme = theme === 'sand-light' ? 'vs' : 'forge-graphite-dark';
+      const monacoTheme = settings.theme === 'sand-light' ? 'vs' : 'forge-graphite-dark';
       // @ts-ignore
-      window.monaco?.editor.setTheme(monacoTheme);
+      window.monaco?.editor?.setTheme(monacoTheme);
     }
-  }, [theme]);
+  }, [settings.theme]);
 
   return (
     <div className="forge-editor-area">
@@ -99,6 +116,13 @@ export const EditorArea: FC<EditorAreaProps> = ({
               key={tab.id}
               className={`forge-tab ${isActive ? 'active' : ''}`}
               onClick={() => onSelectTab(tab.id)}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                const action = confirm(`Close other tabs?`);
+                if (action) {
+                  onCloseOthers(tab.id);
+                }
+              }}
             >
               <span>{tab.title}</span>
               {tab.isDirty ? (
@@ -115,34 +139,77 @@ export const EditorArea: FC<EditorAreaProps> = ({
             </div>
           );
         })}
+
+        {tabs.length > 0 && (
+          <div
+            style={{ marginLeft: 'auto', paddingRight: '10px', display: 'flex', gap: 6 }}
+          >
+            <button
+              className="forge-icon-btn"
+              title="Close All Tabs"
+              onClick={onCloseAll}
+              style={{ fontSize: '10px' }}
+            >
+              Close All
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* CodeEdit Breadcrumbs */}
+      {activeTab && (
+        <Breadcrumbs
+          workspaceRoot={workspaceRoot}
+          activePath={activeTab.relativePath}
+          onRunFile={onRunFile}
+          isRunning={isRunning}
+        />
+      )}
 
       {/* Editor surface */}
       <div className="forge-editor-surface">
         {activeTab ? (
-          <Editor
-            height="100%"
-            language={activeTab.languageId || 'plaintext'}
-            value={activeTab.content}
-            theme={theme === 'sand-light' ? 'vs' : 'forge-graphite-dark'}
-            onChange={(val) => onContentChange(activeTab.id, val || '')}
-            onMount={handleEditorDidMount}
-            options={{
-              fontSize: 13,
-              fontFamily: 'JetBrains Mono, Fira Code, Menlo, Monaco, monospace',
-              fontLigatures: true,
-              minimap: { enabled: true, renderCharacters: false, maxColumn: 80 },
-              scrollBeyondLastLine: false,
-              automaticLayout: true,
-              lineNumbers: 'on',
-              renderLineHighlight: 'all',
-              tabSize: 2,
-              wordWrap: 'on',
-              smoothScrolling: true,
-              cursorBlinking: 'smooth',
-            }}
-          />
+          activeTab.isDiff ? (
+            <DiffEditor
+              height="100%"
+              original={activeTab.diffOriginal || ''}
+              modified={activeTab.diffModified || ''}
+              language={activeTab.languageId || 'plaintext'}
+              theme={settings.theme === 'sand-light' ? 'vs' : 'forge-graphite-dark'}
+              options={{
+                fontSize: settings.fontSize,
+                fontFamily: settings.fontFamily,
+                renderSideBySide: true,
+                automaticLayout: true,
+                readOnly: true,
+              }}
+            />
+          ) : (
+            <Editor
+              height="100%"
+              language={activeTab.languageId || 'plaintext'}
+              value={activeTab.content}
+              theme={settings.theme === 'sand-light' ? 'vs' : 'forge-graphite-dark'}
+              onChange={(val) => onContentChange(activeTab.id, val || '')}
+              onMount={handleEditorDidMount}
+              options={{
+                fontSize: settings.fontSize,
+                fontFamily: settings.fontFamily,
+                fontLigatures: true,
+                minimap: { enabled: settings.minimap, renderCharacters: false, maxColumn: 80 },
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+                lineNumbers: 'on',
+                renderLineHighlight: 'all',
+                tabSize: settings.tabSize,
+                wordWrap: settings.wordWrap ? 'on' : 'off',
+                smoothScrolling: true,
+                cursorBlinking: 'smooth',
+              }}
+            />
+          )
         ) : (
+          /* CodeEdit-inspired welcome / empty workspace screen */
           <div
             style={{
               display: 'flex',
@@ -150,24 +217,92 @@ export const EditorArea: FC<EditorAreaProps> = ({
               alignItems: 'center',
               justifyContent: 'center',
               height: '100%',
-              gap: '16px',
+              gap: '18px',
               color: 'var(--forge-text-muted)',
             }}
           >
-            <div style={{ fontSize: '20px', fontWeight: 600, color: 'var(--forge-text-primary)' }}>
-              my-forge
+            <div style={{ fontSize: '26px', fontWeight: 700, color: 'var(--forge-text-primary)', letterSpacing: '-0.5px' }}>
+              forge
             </div>
-            <p style={{ fontSize: '13px' }}>Your workspace for building software.</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
+            <p style={{ fontSize: '13px', color: 'var(--forge-text-secondary)', marginTop: -8 }}>
+              Your workspace for building software.
+            </p>
+
+            <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+              <button
+                onClick={onOpenFolder}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  backgroundColor: 'var(--forge-accent)',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: 'var(--forge-radius-md)',
+                  fontWeight: 600,
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                }}
+              >
+                <IconFolder />
+                <span>Open Folder</span>
+              </button>
+              <button
+                onClick={onOpenFile}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  backgroundColor: 'var(--forge-bg-hover)',
+                  color: 'var(--forge-text-primary)',
+                  border: '1px solid var(--forge-border)',
+                  padding: '8px 16px',
+                  borderRadius: 'var(--forge-radius-md)',
+                  fontWeight: 500,
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                }}
+              >
+                <IconFile />
+                <span>Open File</span>
+              </button>
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                marginTop: '16px',
+                width: '280px',
+              }}
+            >
               <div
-                style={{ cursor: 'pointer', display: 'flex', gap: '16px', justifyContent: 'space-between' }}
+                style={{
+                  cursor: 'pointer',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  padding: '6px 8px',
+                  borderRadius: '4px',
+                  background: 'var(--forge-bg-hover)',
+                  fontSize: '12px',
+                }}
                 onClick={onOpenQuickOpen}
               >
                 <span>Quick Open File</span>
                 <span className="forge-kbd">Cmd+P</span>
               </div>
               <div
-                style={{ cursor: 'pointer', display: 'flex', gap: '16px', justifyContent: 'space-between' }}
+                style={{
+                  cursor: 'pointer',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  padding: '6px 8px',
+                  borderRadius: '4px',
+                  background: 'var(--forge-bg-hover)',
+                  fontSize: '12px',
+                }}
                 onClick={onOpenCommandPalette}
               >
                 <span>Command Palette</span>

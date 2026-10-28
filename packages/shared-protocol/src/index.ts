@@ -55,6 +55,84 @@ export interface DaemonInfo {
   arch: string;
 }
 
+// Content search interfaces
+export interface ContentSearchMatch {
+  relativePath: string;
+  absolutePath: string;
+  line: number;
+  column: number;
+  lineText: string;
+  matchLength: number;
+}
+
+export interface ContentSearchResult {
+  query: string;
+  matches: ContentSearchMatch[];
+  totalMatches: number;
+  fileCount: number;
+  durationMs: number;
+}
+
+// Git interfaces
+export interface GitFileStatus {
+  path: string;
+  status: 'modified' | 'untracked' | 'staged' | 'deleted' | 'renamed' | 'conflicted';
+  staged: boolean;
+  workingTreeStatus: string;
+  indexStatus: string;
+}
+
+export interface GitRepositoryStatus {
+  isRepo: boolean;
+  branch: string;
+  upstream?: string;
+  files: GitFileStatus[];
+  ahead: number;
+  behind: number;
+}
+
+export interface GitCommitResult {
+  success: boolean;
+  commitHash?: string;
+  message?: string;
+  error?: string;
+}
+
+// File Execution interfaces
+export interface RunResult {
+  success: boolean;
+  runtime: string;
+  command: string;
+  stdout: string;
+  stderr: string;
+  exitCode: number;
+  durationMs: number;
+}
+
+// Settings & Preferences
+export interface ForgeSettings {
+  theme: 'graphite-dark' | 'sand-light';
+  fontSize: number;
+  fontFamily: string;
+  tabSize: number;
+  wordWrap: boolean;
+  minimap: boolean;
+}
+
+// Extension metadata
+export interface ExtensionItem {
+  id: string;
+  name: string;
+  displayName: string;
+  publisher: string;
+  version: string;
+  description: string;
+  category: 'theme' | 'language' | 'snippet' | 'tool';
+  supported: boolean;
+  supportNote: string;
+  installed: boolean;
+}
+
 // Window API interface exposed via Electron preload contextBridge
 export interface MyForgeAPI {
   // Daemon methods
@@ -65,12 +143,53 @@ export interface MyForgeAPI {
   indexWorkspace: () => Promise<IndexStats>;
   listDirectory: (path?: string) => Promise<FileEntry[]>;
   searchFiles: (query: string, limit?: number) => Promise<FileEntry[]>;
+  searchContent: (
+    query: string,
+    options?: { isCaseSensitive?: boolean; isWholeWord?: boolean }
+  ) => Promise<ContentSearchResult>;
   readFile: (path: string) => Promise<{ path: string; content: string }>;
   writeFile: (path: string, content: string) => Promise<{ success: boolean; path: string }>;
+
+  // File/Folder CRUD
+  createFile: (relPath: string, content?: string) => Promise<{ success: boolean; path: string }>;
+  createFolder: (relPath: string) => Promise<{ success: boolean; path: string }>;
+  renameEntry: (oldRelPath: string, newRelPath: string) => Promise<{ success: boolean; oldPath: string; newPath: string }>;
+  deleteEntry: (relPath: string) => Promise<{ success: boolean; path: string }>;
+  showInFolder: (relPath: string) => Promise<boolean>;
 
   // Native OS dialogs
   openFolderDialog: () => Promise<string | null>;
   openFileDialog: () => Promise<string | null>;
+  saveFileDialog: (defaultName?: string) => Promise<string | null>;
+
+  // Git operations
+  gitGetStatus: () => Promise<GitRepositoryStatus>;
+  gitStageFile: (path: string) => Promise<{ success: boolean }>;
+  gitUnstageFile: (path: string) => Promise<{ success: boolean }>;
+  gitStageAll: () => Promise<{ success: boolean }>;
+  gitUnstageAll: () => Promise<{ success: boolean }>;
+  gitDiscardChanges: (path: string) => Promise<{ success: boolean }>;
+  gitCommit: (message: string) => Promise<GitCommitResult>;
+  gitGetDiff: (path: string, staged?: boolean) => Promise<{ original: string; modified: string }>;
+  gitGetBranches: () => Promise<string[]>;
+  gitSwitchBranch: (branch: string) => Promise<{ success: boolean }>;
+  gitCreateBranch: (branch: string) => Promise<{ success: boolean }>;
+
+  // Terminal PTY operations
+  terminalCreate: (options?: { cwd?: string; cols?: number; rows?: number }) => Promise<{ id: string }>;
+  terminalWrite: (id: string, data: string) => Promise<void>;
+  terminalResize: (id: string, cols: number, rows: number) => Promise<void>;
+  terminalClose: (id: string) => Promise<void>;
+  onTerminalData: (callback: (id: string, data: string) => void) => () => void;
+  onTerminalExit: (callback: (id: string, exitCode: number) => void) => () => void;
+
+  // Run File
+  runFile: (filePath: string) => Promise<RunResult>;
+
+  // Settings & Workspaces
+  getSettings: () => Promise<ForgeSettings>;
+  saveSettings: (settings: Partial<ForgeSettings>) => Promise<ForgeSettings>;
+  getRecentWorkspaces: () => Promise<string[]>;
 
   // Window control
   minimize: () => void;
