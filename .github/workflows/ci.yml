@@ -34,6 +34,7 @@ jobs:
           cache: 'npm'
 
       - name: Run Go Unit & Race Tests
+        shell: bash
         run: |
           cd services/forge-daemon
           go fmt ./...
@@ -41,9 +42,13 @@ jobs:
           go test -v -race ./...
 
       - name: Build Go Daemon
+        shell: bash
         run: |
           cd services/forge-daemon
           go build -o bin/forge-daemon ./cmd/forge-daemon
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            go build -o bin/forge-daemon.exe ./cmd/forge-daemon
+          fi
 
       - name: Install Monorepo Dependencies
         run: npm install
