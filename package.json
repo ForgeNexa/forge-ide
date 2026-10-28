@@ -1,0 +1,28 @@
+{
+  "name": "my-forge-monorepo",
+  "version": "0.1.0",
+  "description": "my-forge — A Fast, Go-Powered Code Editor by Yantra Works",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "start": "electron apps/desktop/dist/main.js",
+    "dev": "npm run dev:all",
+    "dev:daemon": "cd services/forge-daemon && go run cmd/forge-daemon/main.go",
+    "dev:renderer": "npm run dev --workspace=@my-forge/renderer",
+    "dev:desktop": "npm run dev --workspace=@my-forge/desktop",
+    "dev:all": "concurrently -k -p \"[{name}]\" -n \"DAEMON,RENDER,DESKTOP\" -c \"cyan,blue,magenta\" \"cd services/forge-daemon && go run cmd/forge-daemon/main.go\" \"npm run dev --workspace=@my-forge/renderer\" \"wait-on tcp:5173 && npm run dev --workspace=@my-forge/desktop\"",
+    "build": "npm run build --workspace=@my-forge/shared-protocol && npm run build --workspace=@my-forge/design-system && npm run build --workspace=@my-forge/renderer && npm run build --workspace=@my-forge/desktop && npm run build:daemon",
+    "build:daemon": "cd services/forge-daemon && go build -o bin/forge-daemon cmd/forge-daemon/main.go",
+    "test": "npm run test:go && npm run test:ts",
+    "test:go": "cd services/forge-daemon && go test -v -race ./...",
+    "test:ts": "npm run test --workspace=@my-forge/shared-protocol"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "typescript": "^5.8.2",
+    "wait-on": "^8.0.2"
+  }
+}

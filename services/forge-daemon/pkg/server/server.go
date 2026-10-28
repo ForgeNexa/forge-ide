@@ -1,0 +1,218 @@
+package server
+
+import (
+	"bufio"
+	"encoding/json"
+	"fmt"
+	"io"
+	"log"
+	"os"
+	"runtime"
+	"sync"
+	"time"
+
+	"github.com/yantra-works/my-forge/services/forge-daemon/pkg/protocol"
+	"github.com/yantra-works/my-forge/services/forge-daemon/pkg/workspace"
+)
+
+// Server handles JSON-RPC 2.0 communication.
+type Server struct {
+	indexer   *workspace.Indexer
+	startTime time.Time
+	logger    *log.Logger
+	mu        sync.Mutex
+	isClosed  bool
+}
+
+// NewServer creates a new JSON-RPC server.
+func NewServer(logger *log.Logger) *Server {
+	if logger == nil {
+		logger = log.New(os.Stderr, "[forge-daemon] ", log.LstdFlags)
+	}
+	return &Server{
+		indexer:   workspace.NewIndexer(),
+		startTime: time.Now(),
+		logger:    logger,
+	}
+}
+
+// Serve reads JSON-RPC line-delimited messages from r and writes to w.
+func (s *Server) Serve(r io.Reader, w io.Writer) error {
+	scanner := bufio.NewScanner(r)
+	// Allow large messages up to 16MB
+	buf := make([]byte, 1024*1024)
+	scanner.Buffer(buf, 16*1024*1024)
+
+	encoder := json.NewEncoder(w)
+
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		if len(line) == 0 {
+			continue
+		}
+
+		var req protocol.Request
+		if err := json.Unmarshal(line, &req); err != nil {
+			s.logger.Printf("parse error: %v", err)
+			resp := protocol.Response{
+				JSONRPC: "2.0",
+				Error:   protocol.NewError(protocol.CodeParseError, "Parse error", err.Error()),
+			}
+			s.sendResponse(encoder, resp)
+			continue
+		}
+
+		resp := s.handleRequest(&req)
+		if resp != nil {
+			s.sendResponse(encoder, *resp)
+		}
+
+		if req.Method == "shutdown" {
+			s.logger.Println("shutdown received, terminating server loop")
+			break
+		}
+	}
+
+	return scanner.Err()
+}
+
+func (s *Server) sendResponse(enc *json.Encoder, resp protocol.Response) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if err := enc.Encode(resp); err != nil {
+		s.logger.Printf("failed to write response: %v", err)
+	}
+}
+
+func (s *Server) handleRequest(req *protocol.Request) *protocol.Response {
+	resp := &protocol.Response{
+		JSONRPC: "2.0",
+		ID:      req.ID,
+	}
+
+	switch req.Method {
+	case "initialize":
+		resp.Result = map[string]interface{}{
+			"server":   "my-forge-daemon",
+			"version":  "0.1.0",
+			"protocol": "1.0",
+			"pid":      os.Getpid(),
+			"go":       runtime.Version(),
+			"os":       runtime.GOOS,
+			"arch":     runtime.GOARCH,
+		}
+
+	case "system/health":
+		var m runtime.MemStats
+		runtime.ReadMemStats(&m)
+		resp.Result = map[string]interface{}{
+			"status":       "healthy",
+			"uptimeSec":    time.Since(s.startTime).Seconds(),
+			"goroutines":   runtime.NumGoroutine(),
+			"allocBytes":   m.Alloc,
+			"sysBytes":     m.Sys,
+			"numGC":        m.NumGC,
+		}
+
+	case "workspace/setFolder":
+		var p struct {
+			Path string `json:"path"`
+		}
+		if err := json.Unmarshal(req.Params, &p); err != nil {
+			resp.Error = protocol.NewError(protocol.CodeInvalidParams, "Invalid params: expected 'path' string", nil)
+			return resp
+		}
+		if err := s.indexer.SetWorkspaceRoot(p.Path); err != nil {
+			resp.Error = protocol.NewError(protocol.CodeInvalidParams, err.Error(), nil)
+			return resp
+		}
+		resp.Result = map[string]interface{}{
+			"success": true,
+			"root":    s.indexer.GetWorkspaceRoot(),
+		}
+
+	case "workspace/getFolder":
+		resp.Result = map[string]interface{}{
+			"root": s.indexer.GetWorkspaceRoot(),
+		}
+
+	case "workspace/index":
+		stats, err := s.indexer.Index()
+		if err != nil {
+			resp.Error = protocol.NewError(protocol.CodeInternalError, err.Error(), nil)
+			return resp
+		}
+		resp.Result = stats
+
+	case "workspace/listDirectory":
+		var p struct {
+			Path string `json:"path"`
+		}
+		if len(req.Params) > 0 {
+			_ = json.Unmarshal(req.Params, &p)
+		}
+		entries, err := s.indexer.ListDirectory(p.Path)
+		if err != nil {
+			resp.Error = protocol.NewError(protocol.CodeInternalError, err.Error(), nil)
+			return resp
+		}
+		resp.Result = entries
+
+	case "workspace/searchFiles":
+		var p struct {
+			Query string `json:"query"`
+			Limit int    `json:"limit"`
+		}
+		if len(req.Params) > 0 {
+			_ = json.Unmarshal(req.Params, &p)
+		}
+		results := s.indexer.SearchFiles(p.Query, p.Limit)
+		resp.Result = results
+
+	case "workspace/readFile":
+		var p struct {
+			Path string `json:"path"`
+		}
+		if err := json.Unmarshal(req.Params, &p); err != nil || p.Path == "" {
+			resp.Error = protocol.NewError(protocol.CodeInvalidParams, "Invalid params: 'path' required", nil)
+			return resp
+		}
+		content, err := s.indexer.ReadFile(p.Path)
+		if err != nil {
+			resp.Error = protocol.NewError(protocol.CodeInternalError, err.Error(), nil)
+			return resp
+		}
+		resp.Result = map[string]interface{}{
+			"path":    p.Path,
+			"content": content,
+		}
+
+	case "workspace/writeFile":
+		var p struct {
+			Path    string `json:"path"`
+			Content string `json:"content"`
+		}
+		if err := json.Unmarshal(req.Params, &p); err != nil || p.Path == "" {
+			resp.Error = protocol.NewError(protocol.CodeInvalidParams, "Invalid params: 'path' and 'content' required", nil)
+			return resp
+		}
+		if err := s.indexer.WriteFile(p.Path, p.Content); err != nil {
+			resp.Error = protocol.NewError(protocol.CodeInternalError, err.Error(), nil)
+			return resp
+		}
+		resp.Result = map[string]interface{}{
+			"success": true,
+			"path":    p.Path,
+		}
+
+	case "shutdown":
+		resp.Result = map[string]interface{}{
+			"status": "shutting_down",
+		}
+
+	default:
+		resp.Error = protocol.NewError(protocol.CodeMethodNotFound, fmt.Sprintf("Method '%s' not found", req.Method), nil)
+	}
+
+	return resp
+}
