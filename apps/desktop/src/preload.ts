@@ -18,6 +18,13 @@ const api: MyForgeAPI = {
   renameEntry: (oldPath: string, newPath: string) => ipcRenderer.invoke('fs:renameEntry', oldPath, newPath),
   deleteEntry: (path: string) => ipcRenderer.invoke('fs:deleteEntry', path),
   showInFolder: (path: string) => ipcRenderer.invoke('fs:showInFolder', path),
+  onFileChange: (callback: (event: any) => void) => {
+    const handler = (_: any, event: any) => callback(event);
+    ipcRenderer.on('workspace:fileChange', handler);
+    return () => {
+      ipcRenderer.removeListener('workspace:fileChange', handler);
+    };
+  },
 
   openFolderDialog: () => ipcRenderer.invoke('dialog:openFolder'),
   openFileDialog: () => ipcRenderer.invoke('dialog:openFile'),

@@ -9,6 +9,7 @@ import {
   SystemHealth,
   IndexStats,
   FileEntry,
+  FileChangeEvent,
 } from '@my-forge/shared-protocol';
 
 export class DaemonManager {
@@ -19,6 +20,7 @@ export class DaemonManager {
     reject: (err: any) => void;
     timer: NodeJS.Timeout;
   }>();
+  private notificationListeners = new Map<string, Set<(params: any) => void>>();
   private rl: readline.Interface | null = null;
   private isShuttingDown = false;
 
@@ -87,7 +89,24 @@ export class DaemonManager {
     if (!trimmed) return;
 
     try {
-      const resp: JSONRPCResponse = JSON.parse(trimmed);
+      const data = JSON.parse(trimmed);
+
+      // Asynchronous JSON-RPC 2.0 notifications (has method, no id)
+      if (data.method && (data.id === undefined || data.id === null)) {
+        const listeners = this.notificationListeners.get(data.method);
+        if (listeners) {
+          for (const listener of listeners) {
+            try {
+              listener(data.params);
+            } catch (err) {
+              console.error(`[DaemonManager] Error in listener for ${data.method}:`, err);
+            }
+          }
+        }
+        return;
+      }
+
+      const resp: JSONRPCResponse = data;
       const id = typeof resp.id === 'number' ? resp.id : -1;
       const pending = this.pendingRequests.get(id);
 
@@ -104,6 +123,28 @@ export class DaemonManager {
     } catch (err) {
       console.error('[DaemonManager] Error parsing daemon JSON-RPC response:', err, line);
     }
+  }
+
+  public onNotification<T = any>(method: string, listener: (params: T) => void): () => void {
+    if (!this.notificationListeners.has(method)) {
+      this.notificationListeners.set(method, new Set());
+    }
+    const set = this.notificationListeners.get(method)!;
+    set.add(listener);
+    return () => {
+      set.delete(listener);
+    };
+  }
+
+  public onFileChange(listener: (event: FileChangeEvent) => void): () => void {
+    const unsubCreated = this.onNotification<FileChangeEvent>('workspace/fileCreated', listener);
+    const unsubModified = this.onNotification<FileChangeEvent>('workspace/fileModified', listener);
+    const unsubDeleted = this.onNotification<FileChangeEvent>('workspace/fileDeleted', listener);
+    return () => {
+      unsubCreated();
+      unsubModified();
+      unsubDeleted();
+    };
   }
 
   public call<T>(method: string, params?: unknown, timeoutMs = 8000): Promise<T> {

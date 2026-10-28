@@ -5,3 +5,8 @@ release-artifacts/
 dist-bin/
 .DS_Store
 *.log
+.hutch/
+.cottontail-tmp/
+experiments/electrobun-eval/build/
+experiments/electrobun-eval/.hutch/
+experiments/electrobun-eval/.cottontail-tmp/
