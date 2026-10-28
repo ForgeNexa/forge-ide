@@ -28,17 +28,39 @@ const (
 
 // Default ignored directories & patterns
 var defaultIgnoredDirs = map[string]bool{
-	".git":         true,
-	".hg":          true,
-	".svn":         true,
-	"node_modules": true,
-	".next":        true,
-	".nuxt":        true,
-	"dist":         true,
-	"build":        true,
-	"target":       true,
-	".turbo":       true,
-	"vendor":       true,
+	".git":            true,
+	".hg":             true,
+	".svn":            true,
+	"node_modules":    true,
+	".next":           true,
+	".nuxt":           true,
+	"dist":            true,
+	"build":           true,
+	"target":          true,
+	".turbo":          true,
+	"vendor":          true,
+	".hutch":          true,
+	".cottontail-tmp": true,
+}
+
+// IsDirectoryIgnored checks if a directory name matches ignored conventions.
+func IsDirectoryIgnored(name string) bool {
+	return defaultIgnoredDirs[name] || strings.HasPrefix(name, ".git")
+}
+
+// IsPathIgnored checks if any path component in relative or absolute path is in ignored directories.
+func IsPathIgnored(p string) bool {
+	cleaned := filepath.Clean(p)
+	parts := strings.Split(cleaned, string(filepath.Separator))
+	for _, part := range parts {
+		if part == "" || part == "." {
+			continue
+		}
+		if IsDirectoryIgnored(part) {
+			return true
+		}
+	}
+	return false
 }
 
 // FileEntry represents a file or directory inside the workspace.
@@ -580,8 +602,8 @@ func (idx *Indexer) DeleteEntry(relPath string) error {
 	return nil
 }
 
-// updateCacheFile adds or updates an entry in the in-memory index cache.
-func (idx *Indexer) updateCacheFile(rel string, abs string, isDir bool, size int64) {
+// UpdateCacheFile adds or updates an entry in the in-memory index cache.
+func (idx *Indexer) UpdateCacheFile(rel string, abs string, isDir bool, size int64) {
 	idx.mu.Lock()
 	defer idx.mu.Unlock()
 
@@ -619,8 +641,12 @@ func (idx *Indexer) updateCacheFile(rel string, abs string, isDir bool, size int
 	}
 }
 
-// deleteCacheEntry removes an entry and its children from the in-memory index cache.
-func (idx *Indexer) deleteCacheEntry(rel string) {
+func (idx *Indexer) updateCacheFile(rel string, abs string, isDir bool, size int64) {
+	idx.UpdateCacheFile(rel, abs, isDir, size)
+}
+
+// DeleteCacheEntry removes an entry and its children from the in-memory index cache.
+func (idx *Indexer) DeleteCacheEntry(rel string) {
 	idx.mu.Lock()
 	defer idx.mu.Unlock()
 
@@ -642,8 +668,12 @@ func (idx *Indexer) deleteCacheEntry(rel string) {
 	idx.files = filtered
 }
 
-// renameCacheEntry updates paths for an entry and its children in the in-memory index cache.
-func (idx *Indexer) renameCacheEntry(oldRel string, newRel string, newAbs string) {
+func (idx *Indexer) deleteCacheEntry(rel string) {
+	idx.DeleteCacheEntry(rel)
+}
+
+// RenameCacheEntry updates paths for an entry and its children in the in-memory index cache.
+func (idx *Indexer) RenameCacheEntry(oldRel string, newRel string, newAbs string) {
 	idx.mu.Lock()
 	defer idx.mu.Unlock()
 
@@ -666,6 +696,10 @@ func (idx *Indexer) renameCacheEntry(oldRel string, newRel string, newAbs string
 			idx.files[i].Name = filepath.Base(idx.files[i].RelativePath)
 		}
 	}
+}
+
+func (idx *Indexer) renameCacheEntry(oldRel string, newRel string, newAbs string) {
+	idx.RenameCacheEntry(oldRel, newRel, newAbs)
 }
 
 // DetectLanguage maps file extensions/names to Monaco language identifiers.

@@ -54,6 +54,8 @@ export const FileTree: FC<FileTreeProps> = ({
   const [renamingPath, setRenamingPath] = useState<string | null>(null);
   const [renamedName, setRenamedName] = useState('');
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+  const [dragOverPath, setDragOverPath] = useState<string | null>(null);
+  const [isDragOverRoot, setIsDragOverRoot] = useState(false);
 
   const folderName = workspaceRoot ? workspaceRoot.split('/').filter(Boolean).pop() || 'workspace' : null;
 
@@ -65,6 +67,53 @@ export const FileTree: FC<FileTreeProps> = ({
     e.preventDefault();
     e.stopPropagation();
     setContextMenu({ x: e.clientX, y: e.clientY, entry: file });
+  };
+
+  const handleDragStart = (e: React.DragEvent, relPath: string) => {
+    e.dataTransfer.setData('text/plain', relPath);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, targetDirRelPath: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverPath !== targetDirRelPath) {
+      setDragOverPath(targetDirRelPath);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent, targetDirRelPath: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (dragOverPath === targetDirRelPath) {
+      setDragOverPath(null);
+    }
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetDirRelPath: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverPath(null);
+    setIsDragOverRoot(false);
+
+    const sourceRelPath = e.dataTransfer.getData('text/plain');
+    if (!sourceRelPath) return;
+
+    // Prevent re-parenting into self or subfolder
+    if (sourceRelPath === targetDirRelPath) return;
+    if (targetDirRelPath.startsWith(sourceRelPath + '/')) return;
+
+    const sourceFileName = sourceRelPath.split('/').pop() || sourceRelPath;
+    const newRelPath = targetDirRelPath ? `${targetDirRelPath}/${sourceFileName}` : sourceFileName;
+
+    if (newRelPath === sourceRelPath) return;
+
+    try {
+      await onRenameEntry(sourceRelPath, newRelPath);
+    } catch (err) {
+      console.error('[FileTree] Drag-and-drop re-parenting error:', err);
+    }
   };
 
   const handleCreateSubmit = async () => {
@@ -136,7 +185,19 @@ export const FileTree: FC<FileTreeProps> = ({
         </div>
       </div>
 
-      <div className="forge-filetree">
+      <div
+        className="forge-filetree"
+        onDragOver={(e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          setIsDragOverRoot(true);
+        }}
+        onDragLeave={() => setIsDragOverRoot(false)}
+        onDrop={(e) => handleDrop(e, '')}
+        style={{
+          outline: isDragOverRoot && !dragOverPath ? '1px dashed var(--forge-accent, #3b82f6)' : undefined,
+        }}
+      >
         {!workspaceRoot ? (
           <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--forge-text-muted)' }}>
             <p style={{ marginBottom: '14px', fontSize: '12px' }}>No workspace folder opened.</p>
@@ -190,12 +251,34 @@ export const FileTree: FC<FileTreeProps> = ({
               const isSelected = selectedPath === file.relativePath;
               const depth = file.relativePath.split('/').length - 1;
               const isRenaming = renamingPath === file.relativePath;
+              const isDropTarget = dragOverPath === file.relativePath;
 
               return (
                 <div
                   key={file.relativePath}
-                  className={`forge-tree-item ${isSelected ? 'selected' : ''} ${file.isDir ? 'is-dir' : ''}`}
-                  style={{ paddingLeft: `${12 + depth * 14}px` }}
+                  draggable={!isRenaming}
+                  onDragStart={(e) => handleDragStart(e, file.relativePath)}
+                  onDragOver={(e) => {
+                    if (file.isDir) {
+                      handleDragOver(e, file.relativePath);
+                    }
+                  }}
+                  onDragLeave={(e) => {
+                    if (file.isDir) {
+                      handleDragLeave(e, file.relativePath);
+                    }
+                  }}
+                  onDrop={(e) => {
+                    if (file.isDir) {
+                      handleDrop(e, file.relativePath);
+                    }
+                  }}
+                  className={`forge-tree-item ${isSelected ? 'selected' : ''} ${file.isDir ? 'is-dir' : ''} ${isDropTarget ? 'drop-target' : ''}`}
+                  style={{
+                    paddingLeft: `${12 + depth * 14}px`,
+                    outline: isDropTarget ? '1px dashed var(--forge-accent, #3b82f6)' : undefined,
+                    backgroundColor: isDropTarget ? 'rgba(59, 130, 246, 0.12)' : undefined,
+                  }}
                   onClick={() => {
                     if (file.isDir) {
                       toggleDir(file.relativePath);

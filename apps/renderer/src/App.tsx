@@ -267,6 +267,32 @@ export const App: FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Listen for real-time background filesystem notifications from Go daemon
+  useEffect(() => {
+    if (!window.myForgeAPI?.onFileChange) return;
+
+    let debounceTimer: any = null;
+    const unsub = window.myForgeAPI.onFileChange(() => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(async () => {
+        try {
+          if (window.myForgeAPI) {
+            const entries = await window.myForgeAPI.listDirectory('');
+            setFiles(entries);
+            await refreshGit();
+          }
+        } catch (err: any) {
+          console.error('[App] Failed to refresh files on change event:', err);
+        }
+      }, 80);
+    });
+
+    return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      unsub();
+    };
+  }, [refreshGit]);
+
   // Update Settings
   const handleUpdateSettings = async (patch: Partial<ForgeSettings>) => {
     const updated = { ...settings, ...patch };

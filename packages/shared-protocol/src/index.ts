@@ -12,6 +12,21 @@ export interface JSONRPCResponse<T = unknown> {
   error?: JSONRPCError;
 }
 
+export interface JSONRPCNotification<T = unknown> {
+  jsonrpc: '2.0';
+  method: string;
+  params: T;
+}
+
+export type FileChangeType = 'created' | 'modified' | 'deleted';
+
+export interface FileChangeEvent {
+  type: FileChangeType;
+  path: string;
+  fullPath: string;
+  isDir: boolean;
+}
+
 export interface JSONRPCError {
   code: number;
   message: string;
@@ -397,6 +412,7 @@ export interface MyForgeAPI {
   renameEntry: (oldRelPath: string, newRelPath: string) => Promise<{ success: boolean; oldPath: string; newPath: string }>;
   deleteEntry: (relPath: string) => Promise<{ success: boolean; path: string }>;
   showInFolder: (relPath: string) => Promise<boolean>;
+  onFileChange?: (callback: (event: FileChangeEvent) => void) => () => void;
 
   // Native OS dialogs
   openFolderDialog: () => Promise<string | null>;

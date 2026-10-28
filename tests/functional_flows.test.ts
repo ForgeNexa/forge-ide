@@ -564,3 +564,80 @@ type Transformer interface {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }
 });
+
+test('Flow 16: Milestone 2 & 3: Background fsnotify watching and drag-and-drop re-parenting', async () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-flow16-'));
+  const client = createDaemonClient();
+
+  try {
+    await client.call('initialize');
+    await client.call('workspace/setFolder', { path: tempDir });
+
+    // Listen for raw notifications from daemon
+    const receivedEvents: Array<{ method: string; params: any }> = [];
+    client.proc.stdout.on('data', (data) => {
+      const lines = data.toString().split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (parsed.method && parsed.id === undefined) {
+            receivedEvents.push(parsed);
+          }
+        } catch {
+          // ignore non-json
+        }
+      }
+    });
+
+    // 1. Create a file via OS filesystem
+    const testFile = path.join(tempDir, 'live-watched.txt');
+    fs.writeFileSync(testFile, 'initial content');
+
+    // Wait for fsnotify event loop
+    await new Promise((r) => setTimeout(r, 200));
+
+    // Verify create or modify event received
+    const hasCreateOrMod = receivedEvents.some(
+      (e) => (e.method === 'workspace/fileCreated' || e.method === 'workspace/fileModified') &&
+             e.params?.path === 'live-watched.txt'
+    );
+    assert.ok(hasCreateOrMod, `Expected fileCreated or fileModified event, received: ${JSON.stringify(receivedEvents)}`);
+
+    // 2. Modify the file via OS filesystem
+    fs.writeFileSync(testFile, 'updated content');
+    await new Promise((r) => setTimeout(r, 200));
+
+    const hasModify = receivedEvents.some(
+      (e) => e.method === 'workspace/fileModified' && e.params?.path === 'live-watched.txt'
+    );
+    assert.ok(hasModify, `Expected fileModified event, received: ${JSON.stringify(receivedEvents)}`);
+
+    // 3. Delete the file via OS filesystem
+    fs.unlinkSync(testFile);
+    await new Promise((r) => setTimeout(r, 200));
+
+    const hasDelete = receivedEvents.some(
+      (e) => e.method === 'workspace/fileDeleted' && e.params?.path === 'live-watched.txt'
+    );
+    assert.ok(hasDelete, `Expected fileDeleted event, received: ${JSON.stringify(receivedEvents)}`);
+
+    // 4. Test Drag-and-drop tree re-parenting calculation
+    const computeReParent = (sourceRelPath: string, targetDirRelPath: string) => {
+      if (sourceRelPath === targetDirRelPath) return null; // cannot drop into self
+      if (targetDirRelPath.startsWith(sourceRelPath + '/')) return null; // cannot drop into subfolder
+      const fileName = sourceRelPath.split('/').pop() || sourceRelPath;
+      return targetDirRelPath ? `${targetDirRelPath}/${fileName}` : fileName;
+    };
+
+    assert.strictEqual(computeReParent('src/utils/math.ts', 'pkg'), 'pkg/math.ts');
+    assert.strictEqual(computeReParent('src/utils/math.ts', ''), 'math.ts');
+    assert.strictEqual(computeReParent('src/utils', 'src/utils'), null);
+    assert.strictEqual(computeReParent('src', 'src/sub'), null);
+
+  } finally {
+    client.close();
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+});

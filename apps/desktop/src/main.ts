@@ -66,6 +66,13 @@ async function createWindow() {
 }
 
 function registerIPCHandlers() {
+  // Real-time filesystem notifications forwarded to renderer
+  daemon.onFileChange((event) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('workspace:fileChange', event);
+    }
+  });
+
   // Daemon methods
   ipcMain.handle('daemon:getInfo', async () => daemon.call('initialize'));
   ipcMain.handle('daemon:getHealth', async () => daemon.getHealth());

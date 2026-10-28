@@ -18,10 +18,12 @@ import (
 // Server handles JSON-RPC 2.0 communication.
 type Server struct {
 	indexer   *workspace.Indexer
+	watcher   *workspace.WorkspaceWatcher
 	startTime time.Time
 	logger    *log.Logger
 	mu        sync.Mutex
 	isClosed  bool
+	encoder   *json.Encoder
 }
 
 // NewServer creates a new JSON-RPC server.
@@ -44,6 +46,19 @@ func (s *Server) Serve(r io.Reader, w io.Writer) error {
 	scanner.Buffer(buf, 16*1024*1024)
 
 	encoder := json.NewEncoder(w)
+	s.mu.Lock()
+	s.encoder = encoder
+	s.mu.Unlock()
+
+	defer func() {
+		s.mu.Lock()
+		s.isClosed = true
+		if s.watcher != nil {
+			_ = s.watcher.Close()
+			s.watcher = nil
+		}
+		s.mu.Unlock()
+	}()
 
 	for scanner.Scan() {
 		line := scanner.Bytes()
@@ -58,13 +73,13 @@ func (s *Server) Serve(r io.Reader, w io.Writer) error {
 				JSONRPC: "2.0",
 				Error:   protocol.NewError(protocol.CodeParseError, "Parse error", err.Error()),
 			}
-			s.sendResponse(encoder, resp)
+			s.sendResponse(resp)
 			continue
 		}
 
 		resp := s.handleRequest(&req)
 		if resp != nil {
-			s.sendResponse(encoder, *resp)
+			s.sendResponse(*resp)
 		}
 
 		if req.Method == "shutdown" {
@@ -76,11 +91,30 @@ func (s *Server) Serve(r io.Reader, w io.Writer) error {
 	return scanner.Err()
 }
 
-func (s *Server) sendResponse(enc *json.Encoder, resp protocol.Response) {
+func (s *Server) sendResponse(resp protocol.Response) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if err := enc.Encode(resp); err != nil {
-		s.logger.Printf("failed to write response: %v", err)
+	if s.encoder != nil {
+		if err := s.encoder.Encode(resp); err != nil {
+			s.logger.Printf("failed to write response: %v", err)
+		}
+	}
+}
+
+// SendNotification dispatches an asynchronous JSON-RPC notification to the client.
+func (s *Server) SendNotification(method string, params interface{}) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.encoder == nil || s.isClosed {
+		return
+	}
+	notif := protocol.Notification{
+		JSONRPC: "2.0",
+		Method:  method,
+		Params:  params,
+	}
+	if err := s.encoder.Encode(notif); err != nil {
+		s.logger.Printf("failed to write notification: %v", err)
 	}
 }
 
@@ -126,6 +160,30 @@ func (s *Server) handleRequest(req *protocol.Request) *protocol.Response {
 			resp.Error = protocol.NewError(protocol.CodeInvalidParams, err.Error(), nil)
 			return resp
 		}
+
+		// Reinitialize workspace background file watcher
+		s.mu.Lock()
+		if s.watcher != nil {
+			_ = s.watcher.Close()
+			s.watcher = nil
+		}
+		watcher, err := workspace.NewWorkspaceWatcher(p.Path, s.indexer, s.logger, func(ev workspace.FileChangeEvent) {
+			switch ev.Type {
+			case workspace.ChangeCreated:
+				s.SendNotification("workspace/fileCreated", ev)
+			case workspace.ChangeModified:
+				s.SendNotification("workspace/fileModified", ev)
+			case workspace.ChangeDeleted:
+				s.SendNotification("workspace/fileDeleted", ev)
+			}
+		})
+		if err != nil {
+			s.logger.Printf("[server] failed to initialize file watcher: %v", err)
+		} else {
+			s.watcher = watcher
+		}
+		s.mu.Unlock()
+
 		resp.Result = map[string]interface{}{
 			"success": true,
 			"root":    s.indexer.GetWorkspaceRoot(),
@@ -277,6 +335,13 @@ func (s *Server) handleRequest(req *protocol.Request) *protocol.Response {
 		}
 
 	case "shutdown":
+		s.mu.Lock()
+		s.isClosed = true
+		if s.watcher != nil {
+			_ = s.watcher.Close()
+			s.watcher = nil
+		}
+		s.mu.Unlock()
 		resp.Result = map[string]interface{}{
 			"status": "shutting_down",
 		}
