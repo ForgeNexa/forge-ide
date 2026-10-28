@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.1] - 2026-10-28
+
+### Added
+- **Requirements Audit & Architecture Reconciliation:**
+  - Comprehensive 15-area requirements audit matrix in `docs/PROJECT_REQUIREMENTS_AUDIT.md`.
+  - Architecture Decision Record (ADR) in `docs/ARCHITECTURE_DECISION.md` objectively evaluating Electron 35 vs Electrobun 2.0 vs Wails v2.
+  - Empirical benchmark suite in `docs/BENCHMARKS.md` documenting live measurements on Apple M5 host vs unverified external estimates.
+  - Prioritized engineering implementation plan in `docs/PROJECT_IMPLEMENTATION_PLAN.md`.
+- **Milestone 1 — LSP Symbol Intelligence & Navigation:**
+  - `getDocumentSymbols` extracting functions, classes, structs, interfaces, and types across Go, TypeScript, JavaScript, Python, and Rust.
+  - `findDefinition` resolving symbol declarations within the file and across workspace paths.
+  - `getHover` returning declaration signatures and doc comments for inspected identifiers.
+  - Added automated test Flow 15 in `tests/functional_flows.test.ts` (15/15 passing).
+
+---
+
 ## [0.2.0] - 2026-10-28
 
 ### Added

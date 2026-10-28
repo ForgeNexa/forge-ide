@@ -298,6 +298,30 @@ export interface LanguageServerInfo {
   sdkRequirement: string;
 }
 
+// LSP Symbol and Intelligence Types
+export interface DocumentSymbol {
+  name: string;
+  kind: 'function' | 'method' | 'class' | 'interface' | 'variable' | 'type' | 'constant';
+  line: number;
+  col: number;
+  endLine?: number;
+  containerName?: string;
+}
+
+export interface DefinitionResult {
+  file: string;
+  line: number;
+  col: number;
+  matchedText: string;
+}
+
+export interface HoverResult {
+  symbol: string;
+  signature: string;
+  doc?: string;
+  language: string;
+}
+
 // Local AI Autocomplete request and response
 export interface AICompletionRequest {
   prefix: string;
@@ -418,6 +442,9 @@ export interface MyForgeAPI {
   // Language Server Protocol (LSP)
   lspGetRegistry: () => Promise<LanguageServerInfo[]>;
   lspGetDiagnostics: (filePath?: string) => Promise<DiagnosticMarker[]>;
+  lspGetDocumentSymbols: (filePath: string, content?: string) => Promise<DocumentSymbol[]>;
+  lspGetDefinition: (filePath: string, symbol: string) => Promise<DefinitionResult | null>;
+  lspGetHover: (filePath: string, symbol: string) => Promise<HoverResult | null>;
 
   // Local AI Autocomplete
   aiGetCompletion: (req: AICompletionRequest) => Promise<AICompletionResult | null>;

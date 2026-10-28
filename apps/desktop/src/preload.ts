@@ -73,6 +73,9 @@ const api: MyForgeAPI = {
 
   lspGetRegistry: () => ipcRenderer.invoke('lsp:getRegistry'),
   lspGetDiagnostics: (filePath?: string) => ipcRenderer.invoke('lsp:getDiagnostics', filePath),
+  lspGetDocumentSymbols: (filePath: string, content?: string) => ipcRenderer.invoke('lsp:getDocumentSymbols', filePath, content),
+  lspGetDefinition: (filePath: string, symbol: string) => ipcRenderer.invoke('lsp:getDefinition', filePath, symbol),
+  lspGetHover: (filePath: string, symbol: string) => ipcRenderer.invoke('lsp:getHover', filePath, symbol),
 
   aiGetCompletion: (req: any) => ipcRenderer.invoke('ai:getCompletion', req),
   aiGetStatus: () => ipcRenderer.invoke('ai:getStatus'),

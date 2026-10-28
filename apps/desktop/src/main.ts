@@ -212,6 +212,15 @@ function registerIPCHandlers() {
   ipcMain.handle('lsp:getDiagnostics', async (_, targetFile?: string) => {
     return lspManager.getDiagnostics(currentWorkspace, targetFile);
   });
+  ipcMain.handle('lsp:getDocumentSymbols', async (_, filePath: string, content?: string) => {
+    return lspManager.getDocumentSymbols(filePath, content);
+  });
+  ipcMain.handle('lsp:getDefinition', async (_, filePath: string, symbol: string) => {
+    return lspManager.findDefinition(currentWorkspace, filePath, symbol);
+  });
+  ipcMain.handle('lsp:getHover', async (_, filePath: string, symbol: string) => {
+    return lspManager.getHover(filePath, symbol);
+  });
 
   // Local AI Autocomplete
   ipcMain.handle('ai:getCompletion', async (_, req: any) => {

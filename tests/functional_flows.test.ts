@@ -491,3 +491,76 @@ test('Flow 14: Local AI FIM completion request formatting and fallback', async (
   assert.ok(completion.text.length > 0);
   assert.ok(completion.durationMs >= 0);
 });
+
+test('Flow 15: LSP symbol extraction, definition discovery, and hover info', async () => {
+  const lsp = new LspManager();
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-flow15-'));
+
+  try {
+    // 1. Test TypeScript Symbol Extraction
+    const tsCode = `// Math helper utility
+export function calculateSum(a: number, b: number): number {
+  return a + b;
+}
+
+export class Calculator {
+  public multiply(x: number, y: number): number {
+    return x * y;
+  }
+}
+
+export interface CalculationResult {
+  value: number;
+}
+`;
+    const tsFile = path.join(tempDir, 'calc.ts');
+    fs.writeFileSync(tsFile, tsCode);
+
+    const tsSymbols = await lsp.getDocumentSymbols(tsFile, tsCode);
+    assert.ok(tsSymbols.length >= 3, `Expected at least 3 symbols, found ${tsSymbols.length}`);
+    assert.strictEqual(tsSymbols.some((s) => s.name === 'calculateSum' && s.kind === 'function'), true);
+    assert.strictEqual(tsSymbols.some((s) => s.name === 'Calculator' && s.kind === 'class'), true);
+    assert.strictEqual(tsSymbols.some((s) => s.name === 'CalculationResult' && s.kind === 'interface'), true);
+
+    // 2. Test Go Symbol Extraction
+    const goCode = `package mathutils
+
+// Add calculates addition
+func Add(a int, b int) int {
+	return a + b
+}
+
+type Point struct {
+	X int
+	Y int
+}
+
+type Transformer interface {
+	Transform()
+}
+`;
+    const goFile = path.join(tempDir, 'math.go');
+    fs.writeFileSync(goFile, goCode);
+
+    const goSymbols = await lsp.getDocumentSymbols(goFile, goCode);
+    assert.ok(goSymbols.length >= 3, `Expected at least 3 symbols in Go, found ${goSymbols.length}`);
+    assert.strictEqual(goSymbols.some((s) => s.name === 'Add' && s.kind === 'function'), true);
+    assert.strictEqual(goSymbols.some((s) => s.name === 'Point' && s.kind === 'class'), true);
+    assert.strictEqual(goSymbols.some((s) => s.name === 'Transformer' && s.kind === 'interface'), true);
+
+    // 3. Test Find Definition
+    const def = await lsp.findDefinition(tempDir, 'calc.ts', 'Calculator');
+    assert.ok(def !== null, 'Expected definition for Calculator');
+    assert.strictEqual(def?.file, 'calc.ts');
+    assert.strictEqual(def?.line, 6);
+
+    // 4. Test Hover Info
+    const hover = await lsp.getHover(goFile, 'Add', goCode);
+    assert.ok(hover !== null, 'Expected hover for Add function');
+    assert.strictEqual(hover?.symbol, 'Add');
+    assert.ok(hover?.signature.includes('func Add'));
+    assert.ok(hover?.doc?.includes('Add calculates addition'));
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+});
