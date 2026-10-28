@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F1115" />
+      <stop offset="50%" stop-color="#121314" />
+      <stop offset="100%" stop-color="#1A1D24" />
+    </linearGradient>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#388BFD" />
+      <stop offset="100%" stop-color="#297AA0" />
+    </linearGradient>
+    <linearGradient id="flameGrad" x1="0%" y1="100%" x2="50%" y2="0%">
+      <stop offset="0%" stop-color="#FF5722" />
+      <stop offset="50%" stop-color="#FF9800" />
+      <stop offset="100%" stop-color="#FFEB3B" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGrad)" />
+
+  <!-- Subtle Grid Lines -->
+  <g stroke="#21262D" stroke-width="1" opacity="0.4">
+    <line x1="100" y1="0" x2="100" y2="630" />
+    <line x1="300" y1="0" x2="300" y2="630" />
+    <line x1="500" y1="0" x2="500" y2="630" />
+    <line x1="700" y1="0" x2="700" y2="630" />
+    <line x1="900" y1="0" x2="900" y2="630" />
+    <line x1="1100" y1="0" x2="1100" y2="630" />
+    <line x1="0" y1="100" x2="1200" y2="100" />
+    <line x1="0" y1="200" x2="1200" y2="200" />
+    <line x1="0" y1="300" x2="1200" y2="300" />
+    <line x1="0" y1="400" x2="1200" y2="400" />
+    <line x1="0" y1="500" x2="1200" y2="500" />
+  </g>
+
+  <!-- Left Card: Forge Logo Mark -->
+  <g transform="translate(120, 150)">
+    <rect width="120" height="120" rx="28" fill="url(#blueGrad)" />
+    <text x="60" y="80" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="72" fill="#ffffff" text-anchor="middle">F</text>
+  </g>
+
+  <!-- Title & Branding -->
+  <g transform="translate(280, 200)">
+    <text font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="800" font-size="72" fill="#ffffff" letter-spacing="-1">Forge IDE</text>
+    <text x="360" y="-12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" font-size="24" fill="#297AA0">v0.2.0</text>
+  </g>
+
+  <g transform="translate(280, 260)">
+    <text font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="500" font-size="28" fill="#8B949E">by Yantra Works</text>
+  </g>
+
+  <!-- Headline -->
+  <g transform="translate(120, 360)">
+    <text font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="700" font-size="38" fill="#E6EDF3">Your workspace for building software.</text>
+  </g>
+
+  <!-- Tagline / Features -->
+  <g transform="translate(120, 420)">
+    <text font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="400" font-size="24" fill="#8B949E">
+      Fast Monaco Editor • Native Go Daemon • Local AI Autocomplete • Multi-Session Terminal
+    </text>
+  </g>
+
+  <!-- Badges at Bottom -->
+  <g transform="translate(120, 480)">
+    <rect width="140" height="42" rx="21" fill="#21262D" stroke="#30363D" stroke-width="1.5" />
+    <text x="70" y="27" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" font-size="15" fill="#58A6FF" text-anchor="middle">⚡ Go Daemon</text>
+
+    <rect x="156" width="160" height="42" rx="21" fill="#21262D" stroke="#30363D" stroke-width="1.5" />
+    <text x="236" y="27" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" font-size="15" fill="#3FB950" text-anchor="middle">🔒 Zero Telemetry</text>
+
+    <rect x="332" width="160" height="42" rx="21" fill="#21262D" stroke="#30363D" stroke-width="1.5" />
+    <text x="412" y="27" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" font-size="15" fill="#D29922" text-anchor="middle">🤖 Local-First AI</text>
+
+    <rect x="508" width="140" height="42" rx="21" fill="#21262D" stroke="#30363D" stroke-width="1.5" />
+    <text x="578" y="27" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" font-size="15" fill="#A371F7" text-anchor="middle">⚖️ MIT License</text>
+  </g>
+
+  <!-- Website URL Right Side -->
+  <g transform="translate(880, 508)">
+    <text font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" font-size="18" fill="#58A6FF">manish-npx.github.io/forge</text>
+  </g>
+</svg>
