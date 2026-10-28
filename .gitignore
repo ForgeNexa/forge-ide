@@ -10,3 +10,4 @@ dist-bin/
 experiments/electrobun-eval/build/
 experiments/electrobun-eval/.hutch/
 experiments/electrobun-eval/.cottontail-tmp/
+node_modules
