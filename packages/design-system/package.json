@@ -4,7 +4,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc && cp src/theme.css dist/theme.css"
+    "build": "tsc && node -e \"fs.copyFileSync('src/theme.css', 'dist/theme.css')\""
   },
   "dependencies": {},
   "devDependencies": {

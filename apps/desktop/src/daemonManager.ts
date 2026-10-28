@@ -67,11 +67,20 @@ export class DaemonManager {
   }
 
   private resolveBinaryPath(): string {
-    const candidates = [
-      path.resolve(__dirname, '../../../services/forge-daemon/bin/forge-daemon'),
-      path.resolve(__dirname, '../../services/forge-daemon/bin/forge-daemon'),
-      path.resolve(process.cwd(), 'services/forge-daemon/bin/forge-daemon'),
+    const isWindows = process.platform === 'win32';
+    const names = isWindows ? ['forge-daemon.exe', 'forge-daemon'] : ['forge-daemon', 'forge-daemon.exe'];
+    const searchDirs = [
+      path.resolve(__dirname, '../../../services/forge-daemon/bin'),
+      path.resolve(__dirname, '../../services/forge-daemon/bin'),
+      path.resolve(process.cwd(), 'services/forge-daemon/bin'),
     ];
+
+    const candidates: string[] = [];
+    for (const dir of searchDirs) {
+      for (const name of names) {
+        candidates.push(path.join(dir, name));
+      }
+    }
 
     for (const c of candidates) {
       if (fs.existsSync(c)) {
