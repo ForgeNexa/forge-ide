@@ -6,11 +6,14 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Electron](https://img.shields.io/badge/Electron-35.0-47848F?style=flat-square&logo=electron)](https://www.electronjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61DAFB?style=flat-square&logo=react)](https://react.dev)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Online-brightgreen?style=flat-square&logo=github)](https://manish-npx.github.io/forge/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
 
 ---
 
 ## 📖 Summary & Description
+
+🔗 **Live Web Demo:** [https://manish-npx.github.io/forge/](https://manish-npx.github.io/forge/)
 
 **forge** (formerly *my-forge*) is a modern, high-performance desktop code editor built by **Yantra Works**. It combines the immediate familiarity and ergonomics of Visual Studio Code with a cleaner, sleeker visual interface and a dedicated **Go-powered native backend daemon** (`forge-daemon`). 
 
