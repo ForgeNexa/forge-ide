@@ -19,16 +19,16 @@ const (
 
 // Request is a standard JSON-RPC 2.0 request.
 type Request struct {
-	JSONRPC string          `json:"jsonrpc"`
+	JSONRPC string           `json:"jsonrpc"`
 	ID      *json.RawMessage `json:"id,omitempty"`
-	Method  string          `json:"method"`
-	Params  json.RawMessage `json:"params,omitempty"`
+	Method  string           `json:"method"`
+	Params  json.RawMessage  `json:"params,omitempty"`
 }
 
 // Response is a standard JSON-RPC 2.0 response.
 type Response struct {
 	JSONRPC string           `json:"jsonrpc"`
-	ID      *json.RawMessage  `json:"id,omitempty"`
+	ID      *json.RawMessage `json:"id,omitempty"`
 	Result  interface{}      `json:"result,omitempty"`
 	Error   *RPCError        `json:"error,omitempty"`
 }

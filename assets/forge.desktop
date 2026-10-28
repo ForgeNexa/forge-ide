@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Forge
+GenericName=Code Editor & IDE
+Comment=Fast, Go-powered code editor and IDE by Yantra Works
+Exec=forge %F
+Terminal=false
+Type=Application
+Icon=forge
+Categories=Development;IDE;TextEditor;
+MimeType=text/plain;inode/directory;
+StartupNotify=true
+StartupWMClass=forge

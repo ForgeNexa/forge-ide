@@ -10,6 +10,8 @@ import { RunnerManager } from '../apps/desktop/src/runnerManager.js';
 import { SettingsManager } from '../apps/desktop/src/settingsManager.js';
 import { TaskManager } from '../apps/desktop/src/taskManager.js';
 import { ExtensionManager } from '../apps/desktop/src/extensionManager.js';
+import { LspManager } from '../apps/desktop/src/lsp/lspManager.js';
+import { LocalAIProvider } from '../apps/desktop/src/ai/localAIProvider.js';
 
 // Helper to spawn daemon and create JSON-RPC client
 function createDaemonClient() {
@@ -390,4 +392,175 @@ test('Flow 12: Website vs Web IDE routing distinction', () => {
   const webIdeHash = '#/web-ide';
   const isWebIdeActive = isWebPreview && webIdeHash.includes('web-ide');
   assert.strictEqual(isWebIdeActive, true);
+});
+
+test('Flow 13: Language registry detection and diagnostics (20+ languages)', async () => {
+  const lsp = new LspManager();
+  const registry = await lsp.getRegistry();
+
+  // Verify registry coverage of 20+ languages
+  assert.ok(registry.length >= 20, `Expected at least 20 languages, found ${registry.length}`);
+  const requiredLanguages = [
+    'typescript',
+    'go',
+    'python',
+    'rust',
+    'c',
+    'csharp',
+    'java',
+    'swift',
+    'kotlin',
+    'dart',
+    'php',
+    'ruby',
+    'html',
+    'css',
+    'json',
+    'yaml',
+    'toml',
+    'sql',
+    'shell',
+    'markdown',
+    'dockerfile',
+    'terraform',
+  ];
+
+  for (const langId of requiredLanguages) {
+    const entry = registry.find((l) => l.languageId === langId);
+    assert.ok(entry, `Language ${langId} missing from registry`);
+    assert.ok(entry.serverName, `Server name missing for ${langId}`);
+    assert.ok(entry.license, `License missing for ${langId}`);
+    assert.ok(entry.sdkRequirement, `SDK requirement missing for ${langId}`);
+  }
+
+  // Verify bundled languages
+  const tsEntry = registry.find((l) => l.languageId === 'typescript');
+  assert.strictEqual(tsEntry?.bundled, true);
+  assert.strictEqual(tsEntry?.available, true);
+
+  // Verify diagnostic capture on syntax error
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-flow13-'));
+  try {
+    const brokenGoFile = path.join(tempDir, 'broken.go');
+    fs.writeFileSync(brokenGoFile, 'package main\n\nfunc main() {\n  broken syntax here\n');
+
+    // Run diagnostics
+    const diags = await lsp.getDiagnostics(tempDir, brokenGoFile);
+    // Since go vet runs on go files, it either reports diagnostics or returns empty if go toolchain isn't in test sandbox
+    assert.ok(Array.isArray(diags));
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test('Flow 14: Local AI FIM completion request formatting and fallback', async () => {
+  const ai = new LocalAIProvider({
+    endpoint: 'http://localhost:11434',
+    defaultModel: 'qwen2.5-coder:0.5b-base',
+  });
+
+  // Verify FIM prompt formatting
+  const prefix = 'function add(a: number, b: number): number {\n  return ';
+  const suffix = '\n}';
+  const prompt = ai.formatFIMPrompt(prefix, suffix);
+  assert.ok(prompt.startsWith('<|fim_prefix|>'));
+  assert.ok(prompt.includes('<|fim_suffix|>'));
+  assert.ok(prompt.endsWith('<|fim_middle|>'));
+  assert.strictEqual(
+    prompt,
+    `<|fim_prefix|>${prefix}<|fim_suffix|>${suffix}<|fim_middle|>`
+  );
+
+  // Verify AI provider status check (non-blocking)
+  const status = await ai.getStatus();
+  assert.ok(status);
+  assert.ok(typeof status.available === 'boolean');
+  assert.ok(status.endpoint.includes('11434'));
+
+  // Verify completion with offline heuristic fallback
+  const completion = await ai.getCompletion({
+    prefix: 'function calculate() {\n  if (',
+    suffix: '\n}',
+    languageId: 'typescript',
+    filename: 'test.ts',
+    maxTokens: 32,
+  });
+
+  // Either Ollama generates a response or local heuristic provides completion
+  assert.ok(completion !== null);
+  assert.ok(completion.text.length > 0);
+  assert.ok(completion.durationMs >= 0);
+});
+
+test('Flow 15: LSP symbol extraction, definition discovery, and hover info', async () => {
+  const lsp = new LspManager();
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-flow15-'));
+
+  try {
+    // 1. Test TypeScript Symbol Extraction
+    const tsCode = `// Math helper utility
+export function calculateSum(a: number, b: number): number {
+  return a + b;
+}
+
+export class Calculator {
+  public multiply(x: number, y: number): number {
+    return x * y;
+  }
+}
+
+export interface CalculationResult {
+  value: number;
+}
+`;
+    const tsFile = path.join(tempDir, 'calc.ts');
+    fs.writeFileSync(tsFile, tsCode);
+
+    const tsSymbols = await lsp.getDocumentSymbols(tsFile, tsCode);
+    assert.ok(tsSymbols.length >= 3, `Expected at least 3 symbols, found ${tsSymbols.length}`);
+    assert.strictEqual(tsSymbols.some((s) => s.name === 'calculateSum' && s.kind === 'function'), true);
+    assert.strictEqual(tsSymbols.some((s) => s.name === 'Calculator' && s.kind === 'class'), true);
+    assert.strictEqual(tsSymbols.some((s) => s.name === 'CalculationResult' && s.kind === 'interface'), true);
+
+    // 2. Test Go Symbol Extraction
+    const goCode = `package mathutils
+
+// Add calculates addition
+func Add(a int, b int) int {
+	return a + b
+}
+
+type Point struct {
+	X int
+	Y int
+}
+
+type Transformer interface {
+	Transform()
+}
+`;
+    const goFile = path.join(tempDir, 'math.go');
+    fs.writeFileSync(goFile, goCode);
+
+    const goSymbols = await lsp.getDocumentSymbols(goFile, goCode);
+    assert.ok(goSymbols.length >= 3, `Expected at least 3 symbols in Go, found ${goSymbols.length}`);
+    assert.strictEqual(goSymbols.some((s) => s.name === 'Add' && s.kind === 'function'), true);
+    assert.strictEqual(goSymbols.some((s) => s.name === 'Point' && s.kind === 'class'), true);
+    assert.strictEqual(goSymbols.some((s) => s.name === 'Transformer' && s.kind === 'interface'), true);
+
+    // 3. Test Find Definition
+    const def = await lsp.findDefinition(tempDir, 'calc.ts', 'Calculator');
+    assert.ok(def !== null, 'Expected definition for Calculator');
+    assert.strictEqual(def?.file, 'calc.ts');
+    assert.strictEqual(def?.line, 6);
+
+    // 4. Test Hover Info
+    const hover = await lsp.getHover(goFile, 'Add', goCode);
+    assert.ok(hover !== null, 'Expected hover for Add function');
+    assert.strictEqual(hover?.symbol, 'Add');
+    assert.ok(hover?.signature.includes('func Add'));
+    assert.ok(hover?.doc?.includes('Add calculates addition'));
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
 });

@@ -1,5 +1,7 @@
 node_modules/
 dist/
 bin/
+release-artifacts/
+dist-bin/
 .DS_Store
 *.log

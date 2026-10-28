@@ -1,0 +1,5 @@
+# Robots.txt for Forge IDE (https://manish-npx.github.io/forge/)
+User-agent: *
+Allow: /
+
+Sitemap: https://manish-npx.github.io/forge/sitemap.xml

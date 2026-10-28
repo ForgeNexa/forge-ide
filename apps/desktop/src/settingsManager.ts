@@ -1,30 +1,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import { ForgeSettings } from '@my-forge/shared-protocol';
-
-const defaultSettings: ForgeSettings = {
-  theme: '2026-dark',
-  iconTheme: 'material-icon-theme',
-  fontSize: 13,
-  fontFamily: 'JetBrains Mono, Menlo, Monaco, monospace',
-  tabSize: 2,
-  wordWrap: true,
-  minimap: true,
-  lineNumbers: 'on',
-  bracketPairColorization: true,
-  autoClosingBrackets: true,
-  cursorBlinking: 'smooth',
-  maxFileSizeMB: 10,
-  autoReindexDebounceMs: 250,
-  aiEnabled: true,
-  aiProvider: 'gemini-3.8-flash',
-  aiInlineCompletions: true,
-  aiContextAwareness: true,
-  telemetryEnabled: false,
-  localOnlyMode: true,
-  terminalPosition: 'bottom',
-};
+import { ForgeSettings, defaultForgeSettings } from '@my-forge/shared-protocol';
 
 export class SettingsManager {
   private configDir: string;
@@ -52,12 +29,13 @@ export class SettingsManager {
     try {
       if (fs.existsSync(this.settingsFile)) {
         const raw = fs.readFileSync(this.settingsFile, 'utf8');
-        return { ...defaultSettings, ...JSON.parse(raw) };
+        const parsed = JSON.parse(raw);
+        return { ...defaultForgeSettings, ...parsed };
       }
     } catch {
-      // fallback
+      // fallback on malformed json without crashing
     }
-    return defaultSettings;
+    return defaultForgeSettings;
   }
 
   public saveSettings(patch: Partial<ForgeSettings>): ForgeSettings {
@@ -70,6 +48,33 @@ export class SettingsManager {
       console.error('[SettingsManager] Failed to save settings:', err);
     }
     return updated;
+  }
+
+  public resetSettings(): ForgeSettings {
+    try {
+      this.ensureDir();
+      fs.writeFileSync(this.settingsFile, JSON.stringify(defaultForgeSettings, null, 2), 'utf8');
+    } catch (err) {
+      console.error('[SettingsManager] Failed to reset settings:', err);
+    }
+    return defaultForgeSettings;
+  }
+
+  public exportSettings(): string {
+    return JSON.stringify(this.getSettings(), null, 2);
+  }
+
+  public importSettings(rawJSON: string): { success: boolean; settings?: ForgeSettings; error?: string } {
+    try {
+      const parsed = JSON.parse(rawJSON);
+      if (typeof parsed !== 'object' || parsed === null) {
+        return { success: false, error: 'Settings payload must be a JSON object' };
+      }
+      const updated = this.saveSettings(parsed);
+      return { success: true, settings: updated };
+    } catch (err: any) {
+      return { success: false, error: `Invalid JSON format: ${err.message}` };
+    }
   }
 
   public getRecentWorkspaces(): string[] {

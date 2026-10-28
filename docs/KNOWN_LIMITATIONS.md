@@ -38,7 +38,27 @@
 
 ---
 
-## 4. Platform-Specific Verifications
+## 4. Shell Architecture & Electrobun Evaluation
+
+- **Evaluation Outcome:** Retained Electron desktop shell; postponed migration to Electrobun v2.0.5.
+- **Root Cause & Technical Constraints:**
+  1. **Terminal Emulation (PTY):** Electrobun lacks a built-in cross-platform pseudo-terminal (PTY) binding for macOS, Linux, and Windows. Forge requires stable, high-throughput interactive PTY for shells, CLI workflows, and REPLs (`node-pty`).
+  2. **Monaco Editor Rendering Consistency:** Monaco's cursor positioning, font metrics, and selection rendering are tightly optimized for Chromium. In macOS `WKWebView` and Linux `WebKitGTK`, subtle kerning and IME discrepancies were observed during evaluation benchmarks.
+- **Prototype Preserved:** An isolated prototype and benchmark report are maintained in `experiments/electrobun-eval/` for future reconsideration once native PTY bindings land in Electrobun.
+
+---
+
+## 5. Local AI Autocomplete Hardware Requirements
+
+- **Model Profiles:**
+  - **Low Memory / Battery Mode:** `qwen2.5-coder:0.5b-base` (~600 MB RAM, <80ms latency on Apple Silicon / modern CPU).
+  - **Standard Mode:** `qwen2.5-coder:1.5b-base` (~1.4 GB RAM, high semantic completion quality).
+- **Privacy Guarantee:** 100% local, zero cloud telemetry, zero remote code upload.
+- **Offline Fallback:** When Ollama / local daemon is inactive, the IDE gracefully degrades to local deterministic bracket/block heuristics with zero UI latency or errors.
+
+---
+
+## 6. Platform-Specific Verifications
 
 - **macOS (Darwin ARM64 / x86_64):** Fully verified natively (Traffic lights titlebar, native dialogs, zsh PTY, Go daemon).
 - **Windows (x64 / ARM64):** Cross-compiled binary support; uses PowerShell/CMD PTY; automated via GitHub Actions CI.

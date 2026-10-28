@@ -1,0 +1,55 @@
+name: CI — Cross-Platform Verification
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node-version: [20.x, 22.x]
+        go-version: ['1.23.x']
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache-dependency-path: services/forge-daemon/go.sum
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Run Go Unit & Race Tests
+        run: |
+          cd services/forge-daemon
+          go fmt ./...
+          go vet ./...
+          go test -v -race ./...
+
+      - name: Build Go Daemon
+        run: |
+          cd services/forge-daemon
+          go build -o bin/forge-daemon ./cmd/forge-daemon
+
+      - name: Install Monorepo Dependencies
+        run: npm install
+
+      - name: Build Shared Protocol & Renderer
+        run: npm run build
+
+      - name: Run Monorepo Test Flows
+        run: npm test

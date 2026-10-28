@@ -71,9 +71,24 @@ const api: MyForgeAPI = {
   extensionToggleEnable: (id: string, enabled: boolean) => ipcRenderer.invoke('extension:toggleEnable', id, enabled),
   extensionGetInstalled: () => ipcRenderer.invoke('extension:getInstalled'),
 
+  lspGetRegistry: () => ipcRenderer.invoke('lsp:getRegistry'),
+  lspGetDiagnostics: (filePath?: string) => ipcRenderer.invoke('lsp:getDiagnostics', filePath),
+  lspGetDocumentSymbols: (filePath: string, content?: string) => ipcRenderer.invoke('lsp:getDocumentSymbols', filePath, content),
+  lspGetDefinition: (filePath: string, symbol: string) => ipcRenderer.invoke('lsp:getDefinition', filePath, symbol),
+  lspGetHover: (filePath: string, symbol: string) => ipcRenderer.invoke('lsp:getHover', filePath, symbol),
+
+  aiGetCompletion: (req: any) => ipcRenderer.invoke('ai:getCompletion', req),
+  aiGetStatus: () => ipcRenderer.invoke('ai:getStatus'),
+
   getSettings: () => ipcRenderer.invoke('settings:get'),
   saveSettings: (settings: any) => ipcRenderer.invoke('settings:save', settings),
+  resetSettings: () => ipcRenderer.invoke('settings:reset'),
+  exportSettings: () => ipcRenderer.invoke('settings:export'),
+  importSettings: (json: string) => ipcRenderer.invoke('settings:import', json),
   getRecentWorkspaces: () => ipcRenderer.invoke('settings:getRecentWorkspaces'),
+
+  getDiagnosticReport: () => ipcRenderer.invoke('diagnostics:getReport'),
+  openLogDir: () => ipcRenderer.invoke('diagnostics:openLogDir'),
 
   minimize: () => ipcRenderer.send('window:minimize'),
   maximize: () => ipcRenderer.send('window:maximize'),

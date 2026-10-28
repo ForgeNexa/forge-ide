@@ -106,12 +106,12 @@ func (s *Server) handleRequest(req *protocol.Request) *protocol.Response {
 		var m runtime.MemStats
 		runtime.ReadMemStats(&m)
 		resp.Result = map[string]interface{}{
-			"status":       "healthy",
-			"uptimeSec":    time.Since(s.startTime).Seconds(),
-			"goroutines":   runtime.NumGoroutine(),
-			"allocBytes":   m.Alloc,
-			"sysBytes":     m.Sys,
-			"numGC":        m.NumGC,
+			"status":     "healthy",
+			"uptimeSec":  time.Since(s.startTime).Seconds(),
+			"goroutines": runtime.NumGoroutine(),
+			"allocBytes": m.Alloc,
+			"sysBytes":   m.Sys,
+			"numGC":      m.NumGC,
 		}
 
 	case "workspace/setFolder":

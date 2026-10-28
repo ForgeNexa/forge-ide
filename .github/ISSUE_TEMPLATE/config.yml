@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Forge In-Browser Live Preview
+    url: https://manish-npx.github.io/forge/
+    about: Test the latest web build of Forge directly in your browser.
+  - name: Security Vulnerability Reporting
+    url: https://github.com/manish-npx/forge/security/advisories/new
+    about: Please report security vulnerabilities privately rather than via public issues.

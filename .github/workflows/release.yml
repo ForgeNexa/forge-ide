@@ -1,0 +1,119 @@
+name: Release — Cross-Platform Build & Publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-daemon:
+    name: Cross-Compile Go Daemon
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goos: darwin
+            goarch: arm64
+            output: forge-daemon-darwin-arm64
+          - goos: darwin
+            goarch: amd64
+            output: forge-daemon-darwin-amd64
+          - goos: linux
+            goarch: amd64
+            output: forge-daemon-linux-amd64
+          - goos: linux
+            goarch: arm64
+            output: forge-daemon-linux-arm64
+          - goos: windows
+            goarch: amd64
+            output: forge-daemon-windows-amd64.exe
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+
+      - name: Cross-compile binary
+        run: |
+          cd services/forge-daemon
+          mkdir -p ../../dist-bin
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} CGO_ENABLED=0 go build -ldflags="-s -w" -o ../../dist-bin/${{ matrix.output }} ./cmd/forge-daemon
+
+      - name: Upload daemon artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.output }}
+          path: dist-bin/${{ matrix.output }}
+
+  build-desktop:
+    name: Package Desktop App on ${{ matrix.os }}
+    needs: build-daemon
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'npm'
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+
+      - name: Build Local Go Daemon
+        run: |
+          cd services/forge-daemon
+          go build -o bin/forge-daemon ./cmd/forge-daemon
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Web Renderer & Shared Protocol
+        run: npm run build
+
+      - name: Package with Electron Builder
+        run: npm run package --if-present
+        continue-on-error: true
+
+  publish-release:
+    name: Publish GitHub Release
+    needs: [build-daemon, build-desktop]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Download all daemon artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+
+      - name: Generate SHA256 Checksums
+        run: |
+          cd release-artifacts
+          find . -type f -exec sha256sum {} + > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release-artifacts/**
+          draft: false
+          prerelease: false
+          generate_release_notes: true

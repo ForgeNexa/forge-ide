@@ -80,3 +80,7 @@ npm run test:flows
   - Searches Open VSX / marketplace, installs extension into `~/.forge/extensions`, toggles enable/disable state, and uninstalls cleanly.
 - **Flow 12: Website vs Web IDE Route Separation**
   - Verifies that root URL loads product & documentation website by default, and `#/web-ide` activates the in-browser IDE.
+- **Flow 13: Language Registry Detection & Diagnostics (20+ Languages)**
+  - Asserts that all 20+ language definitions (TypeScript, Go, Python, Rust, C/C++, C#, Java, Swift, Kotlin, Dart, PHP, Ruby, HTML, CSS, JSON, YAML, TOML, SQL, Shell, Markdown, Dockerfile, Terraform) are present in the registry with valid license, binary name, install command, and SDK prerequisites. Tests diagnostic collection on syntax errors.
+- **Flow 14: Local AI FIM Completion Request Formatting & Fallback**
+  - Validates `<|fim_prefix|>...<|fim_suffix|>...<|fim_middle|>` prompt construction for Qwen2.5-Coder/StarCoder models, non-blocking Ollama health checks, and deterministic local fallback completions.

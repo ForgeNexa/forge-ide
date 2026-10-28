@@ -1,4 +1,4 @@
-import { useRef, useEffect, type FC, type MouseEvent } from 'react';
+import { useRef, useEffect, useState, type FC, type MouseEvent } from 'react';
 import Editor, { DiffEditor, OnMount } from '@monaco-editor/react';
 import { ForgeSettings } from '@my-forge/shared-protocol';
 import { IconClose, IconFolder, IconFile } from './Icons';
@@ -16,6 +16,10 @@ export interface EditorTab {
   isDiff?: boolean;
   diffOriginal?: string;
   diffModified?: string;
+  isImage?: boolean;
+  imageUrl?: string;
+  isBinary?: boolean;
+  isPreviewMarkdown?: boolean;
 }
 
 interface EditorAreaProps {
@@ -36,6 +40,7 @@ interface EditorAreaProps {
   onOpenFile: () => void;
   onRunFile?: () => void;
   isRunning?: boolean;
+  onToggleMarkdownPreview?: (id: string) => void;
 }
 
 export const EditorArea: FC<EditorAreaProps> = ({
@@ -56,9 +61,18 @@ export const EditorArea: FC<EditorAreaProps> = ({
   onOpenFile,
   onRunFile,
   isRunning,
+  onToggleMarkdownPreview,
 }) => {
   const activeTab = tabs.find((t) => t.id === activeTabId);
   const editorRef = useRef<any>(null);
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
+  const activeTabRef = useRef(activeTab);
+  activeTabRef.current = activeTab;
+  const inlineProviderRegistered = useRef(false);
+
+  const [imageZoom, setImageZoom] = useState(100);
+  const [isSplitView, setIsSplitView] = useState(false);
 
   const handleEditorDidMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
@@ -137,6 +151,58 @@ export const EditorArea: FC<EditorAreaProps> = ({
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
       onSave();
     });
+
+    // Register local AI inline completions provider
+    if (!inlineProviderRegistered.current) {
+      inlineProviderRegistered.current = true;
+      monaco.languages.registerInlineCompletionsProvider('*', {
+        provideInlineCompletions: async (model: any, position: any, _context: any, token: any) => {
+          const currentSettings = settingsRef.current;
+          if (!currentSettings.aiEnabled || !currentSettings.aiInlineCompletions) {
+            return { items: [] };
+          }
+          if (!window.myForgeAPI?.aiGetCompletion) {
+            return { items: [] };
+          }
+
+          const fullText = model.getValue();
+          const offset = model.getOffsetAt(position);
+          const prefix = fullText.slice(0, offset);
+          const suffix = fullText.slice(offset);
+
+          try {
+            const res = await window.myForgeAPI.aiGetCompletion({
+              prefix,
+              suffix,
+              languageId: model.getLanguageId(),
+              filename: activeTabRef.current?.relativePath || 'unnamed',
+              maxTokens: 48,
+            });
+
+            if (!res || !res.text || token.isCancellationRequested) {
+              return { items: [] };
+            }
+
+            return {
+              items: [
+                {
+                  insertText: res.text,
+                  range: new monaco.Range(
+                    position.lineNumber,
+                    position.column,
+                    position.lineNumber,
+                    position.column
+                  ),
+                },
+              ],
+            };
+          } catch {
+            return { items: [] };
+          }
+        },
+        freeInlineCompletions: () => {},
+      });
+    }
   };
 
   useEffect(() => {
@@ -191,13 +257,21 @@ export const EditorArea: FC<EditorAreaProps> = ({
 
         {tabs.length > 0 && (
           <div
-            style={{ marginLeft: 'auto', paddingRight: '10px', display: 'flex', gap: 6 }}
+            style={{ marginLeft: 'auto', paddingRight: '10px', display: 'flex', alignItems: 'center', gap: 6 }}
           >
+            <button
+              className={`forge-icon-btn ${isSplitView ? 'active' : ''}`}
+              title="Split Editor Side-by-Side"
+              onClick={() => setIsSplitView((s) => !s)}
+              style={{ fontSize: '11px', padding: '2px 6px' }}
+            >
+              ◫ Split
+            </button>
             <button
               className="forge-icon-btn"
               title="Close All Tabs"
               onClick={onCloseAll}
-              style={{ fontSize: '10px' }}
+              style={{ fontSize: '10px', padding: '2px 6px' }}
             >
               Close All
             </button>
@@ -213,13 +287,99 @@ export const EditorArea: FC<EditorAreaProps> = ({
           iconTheme={settings.iconTheme}
           onRunFile={onRunFile}
           isRunning={isRunning}
+          isMarkdown={activeTab.languageId === 'markdown' || activeTab.relativePath.endsWith('.md')}
+          isPreviewMarkdown={activeTab.isPreviewMarkdown}
+          onToggleMarkdownPreview={() => onToggleMarkdownPreview && onToggleMarkdownPreview(activeTab.id)}
         />
       )}
 
       {/* Editor surface */}
-      <div className="forge-editor-surface">
+      <div className="forge-editor-surface" style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         {activeTab ? (
-          activeTab.isDiff ? (
+          activeTab.isImage ? (
+            /* Image Preview */
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, height: '100%', background: 'var(--forge-bg-editor)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 14px', borderBottom: '1px solid var(--forge-border)', fontSize: '11px', color: 'var(--forge-text-muted)' }}>
+                <span>Image Preview: {activeTab.title}</span>
+                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <button className="forge-icon-btn" onClick={() => setImageZoom((z) => Math.max(25, z - 25))}>-</button>
+                  <span>{imageZoom}%</span>
+                  <button className="forge-icon-btn" onClick={() => setImageZoom((z) => Math.min(400, z + 25))}>+</button>
+                  <button className="forge-icon-btn" onClick={() => setImageZoom(100)}>100%</button>
+                </div>
+              </div>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'auto', padding: '20px', backgroundImage: 'radial-gradient(var(--forge-border) 1px, transparent 1px)', backgroundSize: '16px 16px' }}>
+                <img
+                  src={activeTab.imageUrl || `file://${workspaceRoot}/${activeTab.relativePath}`}
+                  alt={activeTab.title}
+                  style={{
+                    transform: `scale(${imageZoom / 100})`,
+                    maxWidth: '90%',
+                    maxHeight: '90%',
+                    objectFit: 'contain',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                    borderRadius: 4,
+                  }}
+                />
+              </div>
+            </div>
+          ) : activeTab.isBinary ? (
+            /* Binary Safe Card */
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, height: '100%', gap: 14, color: 'var(--forge-text-muted)', padding: '20px' }}>
+              <div style={{ fontSize: '36px' }}>📦</div>
+              <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--forge-text-primary)' }}>
+                {activeTab.title}
+              </div>
+              <div style={{ fontSize: '12px', maxWidth: '420px', textAlign: 'center', lineHeight: 1.5 }}>
+                This file is binary or uses an unsupported encoding and cannot be rendered in the text editor.
+              </div>
+              <button
+                onClick={() => window.myForgeAPI?.showInFolder(activeTab.relativePath)}
+                style={{
+                  padding: '6px 14px',
+                  background: 'var(--forge-accent)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 4,
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                }}
+              >
+                Reveal in System File Manager
+              </button>
+            </div>
+          ) : activeTab.isPreviewMarkdown ? (
+            /* Markdown Preview Mode */
+            <div style={{ flex: 1, height: '100%', overflowY: 'auto', padding: '24px 32px', background: 'var(--forge-bg-editor)', color: 'var(--forge-text-primary)' }}>
+              <div style={{ maxWidth: '800px', margin: '0 auto', lineHeight: '1.6' }}>
+                {activeTab.content.split('\n').map((line, idx) => {
+                  if (line.startsWith('# ')) {
+                    return <h1 key={idx} style={{ fontSize: '24px', fontWeight: 700, margin: '16px 0 8px', borderBottom: '1px solid var(--forge-border)', paddingBottom: 6 }}>{line.slice(2)}</h1>;
+                  }
+                  if (line.startsWith('## ')) {
+                    return <h2 key={idx} style={{ fontSize: '18px', fontWeight: 600, margin: '14px 0 6px' }}>{line.slice(3)}</h2>;
+                  }
+                  if (line.startsWith('### ')) {
+                    return <h3 key={idx} style={{ fontSize: '15px', fontWeight: 600, margin: '10px 0 4px' }}>{line.slice(4)}</h3>;
+                  }
+                  if (line.startsWith('> ')) {
+                    return <blockquote key={idx} style={{ borderLeft: '3px solid var(--forge-accent)', paddingLeft: '12px', color: 'var(--forge-text-muted)', margin: '8px 0' }}>{line.slice(2)}</blockquote>;
+                  }
+                  if (line.startsWith('```')) {
+                    return <div key={idx} style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', color: 'var(--forge-text-muted)', margin: '4px 0' }}>{line}</div>;
+                  }
+                  if (line.startsWith('- ') || line.startsWith('* ')) {
+                    return <li key={idx} style={{ marginLeft: '20px', lineHeight: '1.6' }}>{line.slice(2)}</li>;
+                  }
+                  if (line.trim() === '') {
+                    return <div key={idx} style={{ height: '8px' }} />;
+                  }
+                  return <p key={idx} style={{ margin: '4px 0', lineHeight: '1.6' }}>{line}</p>;
+                })}
+              </div>
+            </div>
+          ) : activeTab.isDiff ? (
             <DiffEditor
               height="100%"
               original={activeTab.diffOriginal || ''}
@@ -241,34 +401,69 @@ export const EditorArea: FC<EditorAreaProps> = ({
               }}
             />
           ) : (
-            <Editor
-              height="100%"
-              language={activeTab.languageId || 'plaintext'}
-              value={activeTab.content}
-              theme={
-                settings.theme === 'sand-light'
-                  ? 'vs'
-                  : settings.theme === 'graphite-dark'
-                  ? 'forge-graphite-dark'
-                  : 'forge-2026-dark'
-              }
-              onChange={(val) => onContentChange(activeTab.id, val || '')}
-              onMount={handleEditorDidMount}
-              options={{
-                fontSize: settings.fontSize,
-                fontFamily: settings.fontFamily,
-                fontLigatures: true,
-                minimap: { enabled: settings.minimap, renderCharacters: false, maxColumn: 80 },
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-                lineNumbers: 'on',
-                renderLineHighlight: 'all',
-                tabSize: settings.tabSize,
-                wordWrap: settings.wordWrap ? 'on' : 'off',
-                smoothScrolling: true,
-                cursorBlinking: 'smooth',
-              }}
-            />
+            <div style={{ display: 'flex', flex: 1, height: '100%', width: '100%' }}>
+              <div style={{ flex: 1, height: '100%', position: 'relative' }}>
+                <Editor
+                  height="100%"
+                  language={activeTab.languageId || 'plaintext'}
+                  value={activeTab.content}
+                  theme={
+                    settings.theme === 'sand-light'
+                      ? 'vs'
+                      : settings.theme === 'graphite-dark'
+                      ? 'forge-graphite-dark'
+                      : 'forge-2026-dark'
+                  }
+                  onChange={(val) => onContentChange(activeTab.id, val || '')}
+                  onMount={handleEditorDidMount}
+                  options={{
+                    fontSize: settings.fontSize,
+                    fontFamily: settings.fontFamily,
+                    fontLigatures: true,
+                    minimap: { enabled: settings.minimap, renderCharacters: false, maxColumn: 80 },
+                    scrollBeyondLastLine: false,
+                    automaticLayout: true,
+                    lineNumbers: settings.lineNumbers === 'off' ? 'off' : 'on',
+                    renderLineHighlight: 'all',
+                    tabSize: settings.tabSize,
+                    wordWrap: settings.wordWrap ? 'on' : 'off',
+                    smoothScrolling: settings.smoothScrolling,
+                    cursorBlinking: settings.cursorBlinking || 'smooth',
+                    inlineSuggest: { enabled: settings.aiInlineCompletions !== false },
+                    quickSuggestions: { other: true, comments: false, strings: false },
+                  }}
+                />
+              </div>
+              {isSplitView && tabs.length > 1 && (
+                <div style={{ flex: 1, height: '100%', borderLeft: '1px solid var(--forge-border)', position: 'relative' }}>
+                  {(() => {
+                    const secondaryTab = tabs.find((t) => t.id !== activeTab.id) || tabs[0];
+                    return (
+                      <Editor
+                        height="100%"
+                        language={secondaryTab.languageId || 'plaintext'}
+                        value={secondaryTab.content}
+                        theme={
+                          settings.theme === 'sand-light'
+                            ? 'vs'
+                            : settings.theme === 'graphite-dark'
+                            ? 'forge-graphite-dark'
+                            : 'forge-2026-dark'
+                        }
+                        options={{
+                          fontSize: settings.fontSize,
+                          fontFamily: settings.fontFamily,
+                          readOnly: true,
+                          minimap: { enabled: false },
+                          lineNumbers: 'on',
+                          wordWrap: 'on',
+                        }}
+                      />
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
           )
         ) : (
           /* CodeEdit-inspired welcome / empty workspace screen */
