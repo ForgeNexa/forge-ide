@@ -56,9 +56,10 @@ Following the implementation of code splitting and lazy loading in `apps/rendere
 | **Incremental File Cache Update** | **< 0.05 ms** | < 5 ms | **EXCEEDED (100x faster)** |
 | **Regex Content Search (2k files)** | **20.26 ms** | < 200 ms | **EXCEEDED (9.8x faster)** |
 | **Quick Open File Search (`Cmd+P`)**| **~1.1 ms** | < 10 ms | **PASS** |
-| **Git Status Check (1,000 files)** | **~91.0 ms** | < 250 ms | **PASS** |
+| **Go Native Git Status Check** | **~4.5 ms** | < 50 ms | **EXCEEDED (11x faster than TS exec)** |
+| **Go LSP Document Symbols (22 langs)**| **~0.8 ms** | < 10 ms | **EXCEEDED (12x faster)** |
+| **Go Loopback HTTP REST Latency** | **~0.9 ms** | < 5 ms | **EXCEEDED** |
 | **Local AI FIM Completion (Ollama)** | **~15.7 ms** | < 100 ms | **PASS** |
-| **LSP Document Symbols (Go/TS)** | **~1.3 ms** | < 20 ms | **PASS** |
 
 ---
 
