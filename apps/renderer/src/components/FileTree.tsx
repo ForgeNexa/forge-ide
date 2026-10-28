@@ -57,7 +57,7 @@ export const FileTree: FC<FileTreeProps> = ({
   const [dragOverPath, setDragOverPath] = useState<string | null>(null);
   const [isDragOverRoot, setIsDragOverRoot] = useState(false);
 
-  const folderName = workspaceRoot ? workspaceRoot.split('/').filter(Boolean).pop() || 'workspace' : null;
+  const folderName = workspaceRoot ? workspaceRoot.split(/[/\\]/).filter(Boolean).pop() || 'workspace' : null;
 
   const toggleDir = (relPath: string) => {
     setExpandedDirs((prev) => ({ ...prev, [relPath]: !prev[relPath] }));
@@ -104,7 +104,7 @@ export const FileTree: FC<FileTreeProps> = ({
     if (sourceRelPath === targetDirRelPath) return;
     if (targetDirRelPath.startsWith(sourceRelPath + '/')) return;
 
-    const sourceFileName = sourceRelPath.split('/').pop() || sourceRelPath;
+    const sourceFileName = sourceRelPath.split(/[/\\]/).pop() || sourceRelPath;
     const newRelPath = targetDirRelPath ? `${targetDirRelPath}/${sourceFileName}` : sourceFileName;
 
     if (newRelPath === sourceRelPath) return;
@@ -136,7 +136,8 @@ export const FileTree: FC<FileTreeProps> = ({
       setRenamingPath(null);
       return;
     }
-    const parent = oldRelPath.includes('/') ? oldRelPath.substring(0, oldRelPath.lastIndexOf('/')) : '';
+    const lastSep = Math.max(oldRelPath.lastIndexOf('/'), oldRelPath.lastIndexOf('\\'));
+    const parent = lastSep >= 0 ? oldRelPath.substring(0, lastSep) : '';
     const newPath = parent ? `${parent}/${renamedName.trim()}` : renamedName.trim();
     await onRenameEntry(oldRelPath, newPath);
     setRenamingPath(null);
@@ -249,7 +250,7 @@ export const FileTree: FC<FileTreeProps> = ({
 
             {files.map((file) => {
               const isSelected = selectedPath === file.relativePath;
-              const depth = file.relativePath.split('/').length - 1;
+              const depth = file.relativePath.split(/[/\\]/).length - 1;
               const isRenaming = renamingPath === file.relativePath;
               const isDropTarget = dragOverPath === file.relativePath;
 

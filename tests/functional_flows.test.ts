@@ -14,8 +14,18 @@ import { LspManager } from '../apps/desktop/src/lsp/lspManager.js';
 import { LocalAIProvider } from '../apps/desktop/src/ai/localAIProvider.js';
 
 // Helper to spawn daemon and create JSON-RPC client
+function getDaemonBinaryPath(): string {
+  const isWindows = process.platform === 'win32';
+  const names = isWindows ? ['forge-daemon.exe', 'forge-daemon'] : ['forge-daemon', 'forge-daemon.exe'];
+  for (const name of names) {
+    const candidate = path.resolve(process.cwd(), 'services/forge-daemon/bin', name);
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  return path.resolve(process.cwd(), 'services/forge-daemon/bin', names[0]);
+}
+
 function createDaemonClient() {
-  const binaryPath = path.resolve(process.cwd(), 'services/forge-daemon/bin/forge-daemon');
+  const binaryPath = getDaemonBinaryPath();
   const proc = spawn(binaryPath, [], { stdio: ['pipe', 'pipe', 'inherit'] });
   const rl = readline.createInterface({ input: proc.stdout, terminal: false });
 
@@ -182,8 +192,14 @@ test('Flow 5: Real Git operations (init, stage, commit, branch)', async () => {
     });
 
     // Configure local test user
-    spawn('git', ['config', 'user.name', 'forge-test'], { cwd: tempDir });
-    spawn('git', ['config', 'user.email', 'test@forge.local'], { cwd: tempDir });
+    await new Promise<void>((resolve, reject) => {
+      const p = spawn('git', ['config', 'user.name', 'forge-test'], { cwd: tempDir });
+      p.on('close', (code) => (code === 0 ? resolve() : reject(new Error('git config user.name failed'))));
+    });
+    await new Promise<void>((resolve, reject) => {
+      const p = spawn('git', ['config', 'user.email', 'test@forge.local'], { cwd: tempDir });
+      p.on('close', (code) => (code === 0 ? resolve() : reject(new Error('git config user.email failed'))));
+    });
 
     fs.writeFileSync(path.join(tempDir, 'test.txt'), 'version 1');
 
@@ -591,6 +607,8 @@ test('Flow 16: Milestone 2 & 3: Background fsnotify watching and drag-and-drop r
       }
     });
 
+    const norm = (p?: string) => (p ? path.normalize(p).replace(/\\/g, '/') : '');
+
     // 1. Create a file via OS filesystem
     const testFile = path.join(tempDir, 'live-watched.txt');
     fs.writeFileSync(testFile, 'initial content');
@@ -601,7 +619,7 @@ test('Flow 16: Milestone 2 & 3: Background fsnotify watching and drag-and-drop r
     // Verify create or modify event received
     const hasCreateOrMod = receivedEvents.some(
       (e) => (e.method === 'workspace/fileCreated' || e.method === 'workspace/fileModified') &&
-             e.params?.path === 'live-watched.txt'
+             norm(e.params?.path) === 'live-watched.txt'
     );
     assert.ok(hasCreateOrMod, `Expected fileCreated or fileModified event, received: ${JSON.stringify(receivedEvents)}`);
 
@@ -610,7 +628,7 @@ test('Flow 16: Milestone 2 & 3: Background fsnotify watching and drag-and-drop r
     await new Promise((r) => setTimeout(r, 200));
 
     const hasModify = receivedEvents.some(
-      (e) => e.method === 'workspace/fileModified' && e.params?.path === 'live-watched.txt'
+      (e) => e.method === 'workspace/fileModified' && norm(e.params?.path) === 'live-watched.txt'
     );
     assert.ok(hasModify, `Expected fileModified event, received: ${JSON.stringify(receivedEvents)}`);
 
@@ -619,16 +637,18 @@ test('Flow 16: Milestone 2 & 3: Background fsnotify watching and drag-and-drop r
     await new Promise((r) => setTimeout(r, 200));
 
     const hasDelete = receivedEvents.some(
-      (e) => e.method === 'workspace/fileDeleted' && e.params?.path === 'live-watched.txt'
+      (e) => e.method === 'workspace/fileDeleted' && norm(e.params?.path) === 'live-watched.txt'
     );
     assert.ok(hasDelete, `Expected fileDeleted event, received: ${JSON.stringify(receivedEvents)}`);
 
     // 4. Test Drag-and-drop tree re-parenting calculation
     const computeReParent = (sourceRelPath: string, targetDirRelPath: string) => {
-      if (sourceRelPath === targetDirRelPath) return null; // cannot drop into self
-      if (targetDirRelPath.startsWith(sourceRelPath + '/')) return null; // cannot drop into subfolder
-      const fileName = sourceRelPath.split('/').pop() || sourceRelPath;
-      return targetDirRelPath ? `${targetDirRelPath}/${fileName}` : fileName;
+      const src = sourceRelPath.replace(/\\/g, '/');
+      const target = targetDirRelPath.replace(/\\/g, '/');
+      if (src === target) return null; // cannot drop into self
+      if (target.startsWith(src + '/')) return null; // cannot drop into subfolder
+      const fileName = src.split('/').pop() || src;
+      return target ? `${target}/${fileName}` : fileName;
     };
 
     assert.strictEqual(computeReParent('src/utils/math.ts', 'pkg'), 'pkg/math.ts');
