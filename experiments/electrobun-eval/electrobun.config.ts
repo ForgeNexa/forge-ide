@@ -5,6 +5,7 @@ export default {
     version: '0.1.0',
   },
   build: {
+    mainProcess: 'cottontail',
     views: {
       main: {
         entry: '../../apps/renderer/dist/index.html',
