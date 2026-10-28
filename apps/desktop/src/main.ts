@@ -73,6 +73,18 @@ function registerIPCHandlers() {
     }
   });
 
+  // Task streaming notifications from Go daemon
+  daemon.onNotification<{ taskId: string; chunk: string }>('task/output', (params) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('task:output', params.taskId, params.chunk);
+    }
+  });
+  daemon.onNotification<{ taskId: string; exitCode: number }>('task/exit', (params) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('task:exit', params.taskId, params.exitCode);
+    }
+  });
+
   // Daemon methods
   ipcMain.handle('daemon:getInfo', async () => daemon.call('initialize'));
   ipcMain.handle('daemon:getHealth', async () => daemon.getHealth());
@@ -144,22 +156,84 @@ function registerIPCHandlers() {
     return res.filePath;
   });
 
-  // Git operations
-  ipcMain.handle('git:getStatus', async () => git.getStatus(currentWorkspace));
-  ipcMain.handle('git:stageFile', async (_, filePath: string) => git.stageFile(currentWorkspace, filePath));
-  ipcMain.handle('git:unstageFile', async (_, filePath: string) => git.unstageFile(currentWorkspace, filePath));
-  ipcMain.handle('git:stageAll', async () => git.stageAll(currentWorkspace));
-  ipcMain.handle('git:unstageAll', async () => git.unstageAll(currentWorkspace));
-  ipcMain.handle('git:discardChanges', async (_, filePath: string) =>
-    git.discardChanges(currentWorkspace, filePath)
-  );
-  ipcMain.handle('git:commit', async (_, message: string) => git.commit(currentWorkspace, message));
-  ipcMain.handle('git:getDiff', async (_, filePath: string, staged?: boolean) =>
-    git.getDiff(currentWorkspace, filePath, staged)
-  );
-  ipcMain.handle('git:getBranches', async () => git.getBranches(currentWorkspace));
-  ipcMain.handle('git:switchBranch', async (_, branch: string) => git.switchBranch(currentWorkspace, branch));
-  ipcMain.handle('git:createBranch', async (_, branch: string) => git.createBranch(currentWorkspace, branch));
+  // Git operations (Go Backend first, fallback to TypeScript GitManager)
+  ipcMain.handle('git:getStatus', async () => {
+    try {
+      return await daemon.gitStatus();
+    } catch {
+      return git.getStatus(currentWorkspace);
+    }
+  });
+  ipcMain.handle('git:stageFile', async (_, filePath: string) => {
+    try {
+      return await daemon.gitStageFile(filePath);
+    } catch {
+      return git.stageFile(currentWorkspace, filePath);
+    }
+  });
+  ipcMain.handle('git:unstageFile', async (_, filePath: string) => {
+    try {
+      return await daemon.gitUnstageFile(filePath);
+    } catch {
+      return git.unstageFile(currentWorkspace, filePath);
+    }
+  });
+  ipcMain.handle('git:stageAll', async () => {
+    try {
+      return await daemon.gitStageAll();
+    } catch {
+      return git.stageAll(currentWorkspace);
+    }
+  });
+  ipcMain.handle('git:unstageAll', async () => {
+    try {
+      return await daemon.gitUnstageAll();
+    } catch {
+      return git.unstageAll(currentWorkspace);
+    }
+  });
+  ipcMain.handle('git:discardChanges', async (_, filePath: string) => {
+    try {
+      return await daemon.gitDiscardChanges(filePath);
+    } catch {
+      return git.discardChanges(currentWorkspace, filePath);
+    }
+  });
+  ipcMain.handle('git:commit', async (_, message: string) => {
+    try {
+      return await daemon.gitCommit(message);
+    } catch {
+      return git.commit(currentWorkspace, message);
+    }
+  });
+  ipcMain.handle('git:getDiff', async (_, filePath: string, staged?: boolean) => {
+    try {
+      return await daemon.gitGetDiff(filePath, staged);
+    } catch {
+      return git.getDiff(currentWorkspace, filePath, staged);
+    }
+  });
+  ipcMain.handle('git:getBranches', async () => {
+    try {
+      return await daemon.gitGetBranches();
+    } catch {
+      return git.getBranches(currentWorkspace);
+    }
+  });
+  ipcMain.handle('git:switchBranch', async (_, branch: string) => {
+    try {
+      return await daemon.gitSwitchBranch(branch);
+    } catch {
+      return git.switchBranch(currentWorkspace, branch);
+    }
+  });
+  ipcMain.handle('git:createBranch', async (_, branch: string) => {
+    try {
+      return await daemon.gitCreateBranch(branch);
+    } catch {
+      return git.createBranch(currentWorkspace, branch);
+    }
+  });
 
   // Terminal PTY
   ipcMain.handle('terminal:create', async (_, options?: { cwd?: string; cols?: number; rows?: number }) => {
@@ -175,24 +249,36 @@ function registerIPCHandlers() {
     terminal.close(id);
   });
 
-  // Runner & Tasks
+  // Runner & Tasks (Go Backend first, fallback to TypeScript TaskManager)
   ipcMain.handle('runner:runFile', async (_, filePath: string) => {
     return runner.runFile(filePath, currentWorkspace);
   });
   ipcMain.handle('task:detect', async () => {
-    return taskManager.detectTasks(currentWorkspace);
+    try {
+      return await daemon.taskDetect();
+    } catch {
+      return taskManager.detectTasks(currentWorkspace);
+    }
   });
   ipcMain.handle('task:run', async (_, task: any) => {
-    const taskId = taskManager.runTask(
-      task,
-      currentWorkspace,
-      (chunk) => mainWindow?.webContents.send('task:output', taskId, chunk),
-      (exitCode) => mainWindow?.webContents.send('task:exit', taskId, exitCode)
-    );
-    return { taskId };
+    try {
+      return await daemon.taskRun(task);
+    } catch {
+      const taskId = taskManager.runTask(
+        task,
+        currentWorkspace,
+        (chunk) => mainWindow?.webContents.send('task:output', taskId, chunk),
+        (exitCode) => mainWindow?.webContents.send('task:exit', taskId, exitCode)
+      );
+      return { taskId };
+    }
   });
   ipcMain.handle('task:kill', async (_, taskId: string) => {
-    return taskManager.killTask(taskId);
+    try {
+      return await daemon.taskKill(taskId);
+    } catch {
+      return taskManager.killTask(taskId);
+    }
   });
 
   // Extensions
@@ -212,38 +298,86 @@ function registerIPCHandlers() {
     return extensionManager.getInstalled();
   });
 
-  // Language Server Protocol (LSP)
+  // Language Server Protocol (Go Backend first, fallback to TypeScript LspManager)
   ipcMain.handle('lsp:getRegistry', async () => {
     return lspManager.getRegistry();
   });
   ipcMain.handle('lsp:getDiagnostics', async (_, targetFile?: string) => {
-    return lspManager.getDiagnostics(currentWorkspace, targetFile);
+    try {
+      return await daemon.lspGetDiagnostics(targetFile);
+    } catch {
+      return lspManager.getDiagnostics(currentWorkspace, targetFile);
+    }
   });
   ipcMain.handle('lsp:getDocumentSymbols', async (_, filePath: string, content?: string) => {
-    return lspManager.getDocumentSymbols(filePath, content);
+    try {
+      return await daemon.lspGetSymbols(filePath, content);
+    } catch {
+      return lspManager.getDocumentSymbols(filePath, content);
+    }
   });
   ipcMain.handle('lsp:getDefinition', async (_, filePath: string, symbol: string) => {
-    return lspManager.findDefinition(currentWorkspace, filePath, symbol);
+    try {
+      return await daemon.lspGetDefinition(filePath, symbol);
+    } catch {
+      return lspManager.findDefinition(currentWorkspace, filePath, symbol);
+    }
   });
   ipcMain.handle('lsp:getHover', async (_, filePath: string, symbol: string) => {
-    return lspManager.getHover(filePath, symbol);
+    try {
+      return await daemon.lspGetHover(filePath, symbol);
+    } catch {
+      return lspManager.getHover(filePath, symbol);
+    }
   });
 
-  // Local AI Autocomplete
+  // Local AI Autocomplete (Go Backend first, fallback to TypeScript LocalAIProvider)
   ipcMain.handle('ai:getCompletion', async (_, req: any) => {
-    return localAIProvider.getCompletion(req);
+    try {
+      return await daemon.aiGetCompletion(req);
+    } catch {
+      return localAIProvider.getCompletion(req);
+    }
   });
   ipcMain.handle('ai:getStatus', async () => {
-    return localAIProvider.getStatus();
+    try {
+      return await daemon.aiGetStatus();
+    } catch {
+      return localAIProvider.getStatus();
+    }
   });
 
-  // Settings
-  ipcMain.handle('settings:get', async () => settings.getSettings());
-  ipcMain.handle('settings:save', async (_, patch: any) => settings.saveSettings(patch));
-  ipcMain.handle('settings:reset', async () => settings.resetSettings());
+  // Settings (Go Backend first, fallback to TypeScript SettingsManager)
+  ipcMain.handle('settings:get', async () => {
+    try {
+      return await daemon.getSettings();
+    } catch {
+      return settings.getSettings();
+    }
+  });
+  ipcMain.handle('settings:save', async (_, patch: any) => {
+    try {
+      return await daemon.saveSettings(patch);
+    } catch {
+      return settings.saveSettings(patch);
+    }
+  });
+  ipcMain.handle('settings:reset', async () => {
+    try {
+      return await daemon.resetSettings();
+    } catch {
+      return settings.resetSettings();
+    }
+  });
   ipcMain.handle('settings:export', async () => settings.exportSettings());
   ipcMain.handle('settings:import', async (_, json: string) => settings.importSettings(json));
-  ipcMain.handle('settings:getRecentWorkspaces', async () => settings.getRecentWorkspaces());
+  ipcMain.handle('settings:getRecentWorkspaces', async () => {
+    try {
+      return await daemon.getRecentWorkspaces();
+    } catch {
+      return settings.getRecentWorkspaces();
+    }
+  });
 
   // Structured Logging & Diagnostics
   ipcMain.handle('diagnostics:getReport', async () => logger.generateDiagnosticReport());

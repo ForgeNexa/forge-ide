@@ -10,6 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.1] - 2026-10-28
 
 ### Added
+- **Go-First Backend Architecture (`services/forge-daemon`):**
+  - Modularized backend logic from Electron TypeScript into pure, concurrent Go packages:
+    - `pkg/git`: Full Git operations (`GetStatus`, `StageFile`, `Commit`, `GetDiff`, `Branches`, etc.) with zero Node.js heap overhead.
+    - `pkg/lsp`: 22-language symbol extraction, cross-workspace definition discovery, hover signature documentation, and toolchain diagnostics.
+    - `pkg/tasks`: Project task detection (`package.json`, `go.mod`, `Makefile`, etc.) and bounded concurrency runner streaming stdout/stderr chunks.
+    - `pkg/settings`: Atomic JSON persistence (`.tmp` write + rename), defaults validator, and LRU recent workspaces history.
+    - `pkg/ai`: Fill-In-The-Middle (FIM) tokenizer (DeepSeek, StarCoder, Qwen) and Ollama HTTP client with streaming context cancellation.
+    - `pkg/api`: High-performance loopback HTTP REST service (`github.com/gin-gonic/gin v1.12.0`) bound to `127.0.0.1` with 16-byte random hex bearer token authentication.
+    - `pkg/server`: Line-delimited JSON-RPC 2.0 stdio server handling bidirectional requests and notifications.
+  - **Thread-Safety & Race Detector:** 100% verified clean with `go test -v -race ./...`.
+  - **Desktop Integration:** `apps/desktop/src/daemonManager.ts` and `apps/desktop/src/main.ts` wired to call the Go daemon with transparent TypeScript fallback.
+- **Documentation Deliverables:**
+  - `docs/GO_BACKEND_ARCHITECTURE.md`: Complete package breakdown, Goroutine concurrency model, Gin loopback API spec, and IPC bridge.
+  - `docs/CONCURRENCY_DESIGN.md`: Concurrency patterns, bounded semaphore worker pool, context cancellation, and mutex synchronization.
 - **Requirements Audit & Architecture Reconciliation:**
   - Comprehensive 15-area requirements audit matrix in `docs/PROJECT_REQUIREMENTS_AUDIT.md`.
   - Architecture Decision Record (ADR) in `docs/ARCHITECTURE_DECISION.md` objectively evaluating Electron 35 vs Electrobun 2.0 vs Wails v2.
@@ -19,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `getDocumentSymbols` extracting functions, classes, structs, interfaces, and types across Go, TypeScript, JavaScript, Python, and Rust.
   - `findDefinition` resolving symbol declarations within the file and across workspace paths.
   - `getHover` returning declaration signatures and doc comments for inspected identifiers.
-  - Added automated test Flow 15 in `tests/functional_flows.test.ts` (15/15 passing).
+  - Added automated test Flow 15 in `tests/functional_flows.test.ts` (16/16 passing).
 
 ---
 

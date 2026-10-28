@@ -254,6 +254,107 @@ export class DaemonManager {
     return this.call<{ success: boolean; path: string }>('workspace/writeFile', { path: filePath, content });
   }
 
+  // Git operations via Go backend
+  public async gitStatus(): Promise<any> {
+    return this.call('git/status');
+  }
+
+  public async gitStageFile(filePath: string): Promise<{ success: boolean }> {
+    return this.call('git/stage', { path: filePath });
+  }
+
+  public async gitUnstageFile(filePath: string): Promise<{ success: boolean }> {
+    return this.call('git/unstage', { path: filePath });
+  }
+
+  public async gitStageAll(): Promise<{ success: boolean }> {
+    return this.call('git/stageAll');
+  }
+
+  public async gitUnstageAll(): Promise<{ success: boolean }> {
+    return this.call('git/unstageAll');
+  }
+
+  public async gitDiscardChanges(filePath: string): Promise<{ success: boolean }> {
+    return this.call('git/discard', { path: filePath });
+  }
+
+  public async gitCommit(message: string): Promise<any> {
+    return this.call('git/commit', { message });
+  }
+
+  public async gitGetDiff(filePath: string, staged?: boolean): Promise<any> {
+    return this.call('git/diff', { path: filePath, staged: Boolean(staged) });
+  }
+
+  public async gitGetBranches(): Promise<any> {
+    return this.call('git/branches');
+  }
+
+  public async gitSwitchBranch(branch: string): Promise<{ success: boolean }> {
+    return this.call('git/switchBranch', { branch });
+  }
+
+  public async gitCreateBranch(branch: string): Promise<{ success: boolean }> {
+    return this.call('git/createBranch', { branch });
+  }
+
+  // LSP operations via Go backend
+  public async lspGetSymbols(filePath: string, content = ''): Promise<any> {
+    return this.call('lsp/symbols', { filePath, content });
+  }
+
+  public async lspGetDefinition(filePath: string, symbol: string): Promise<any> {
+    return this.call('lsp/definition', { filePath, symbol });
+  }
+
+  public async lspGetHover(filePath: string, symbol: string, content = ''): Promise<any> {
+    return this.call('lsp/hover', { filePath, symbol, content });
+  }
+
+  public async lspGetDiagnostics(filePath = ''): Promise<any> {
+    return this.call('lsp/diagnostics', { filePath });
+  }
+
+  // Task operations via Go backend
+  public async taskDetect(): Promise<any> {
+    return this.call('task/detect');
+  }
+
+  public async taskRun(task: any): Promise<{ taskId: string }> {
+    return this.call('task/run', task);
+  }
+
+  public async taskKill(taskId: string): Promise<{ success: boolean }> {
+    return this.call('task/kill', { taskId });
+  }
+
+  // Settings operations via Go backend
+  public async getSettings(): Promise<any> {
+    return this.call('settings/get');
+  }
+
+  public async saveSettings(patch: any): Promise<any> {
+    return this.call('settings/save', patch);
+  }
+
+  public async resetSettings(): Promise<any> {
+    return this.call('settings/reset');
+  }
+
+  public async getRecentWorkspaces(): Promise<string[]> {
+    return this.call('settings/recentWorkspaces');
+  }
+
+  // Local AI Autocomplete via Go backend
+  public async aiGetCompletion(req: any): Promise<any> {
+    return this.call('ai/completion', req);
+  }
+
+  public async aiGetStatus(): Promise<any> {
+    return this.call('ai/status');
+  }
+
   public async stop(): Promise<void> {
     this.isShuttingDown = true;
     try {
