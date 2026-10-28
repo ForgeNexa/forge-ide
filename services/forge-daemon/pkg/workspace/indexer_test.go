@@ -150,3 +150,57 @@ func TestDetectLanguage(t *testing.T) {
 		}
 	}
 }
+
+func TestIndexer_IncrementalCache(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "my-forge-cache-test-*")
+	if err != nil {
+		t.Fatalf("failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	indexer := NewIndexer()
+	if err := indexer.SetWorkspaceRoot(tempDir); err != nil {
+		t.Fatalf("SetWorkspaceRoot failed: %v", err)
+	}
+
+	// Initial index of empty workspace
+	stats, err := indexer.Index()
+	if err != nil || stats.TotalFiles != 0 {
+		t.Fatalf("expected 0 initial files, got %d", stats.TotalFiles)
+	}
+
+	// 1. CreateFile should incrementally update cache
+	if err := indexer.CreateFile("pkg/calc.go", "package pkg\n"); err != nil {
+		t.Fatalf("CreateFile failed: %v", err)
+	}
+
+	results := indexer.SearchFiles("calc", 10)
+	if len(results) != 1 || results[0].Name != "calc.go" {
+		t.Fatalf("expected calc.go in SearchFiles without re-index, got: %v", results)
+	}
+
+	// 2. RenameEntry should incrementally update cache
+	if err := indexer.RenameEntry("pkg/calc.go", "pkg/math.go"); err != nil {
+		t.Fatalf("RenameEntry failed: %v", err)
+	}
+
+	resultsOld := indexer.SearchFiles("calc", 10)
+	if len(resultsOld) != 0 {
+		t.Fatalf("expected old calc.go to be gone from cache, got: %v", resultsOld)
+	}
+
+	resultsNew := indexer.SearchFiles("math", 10)
+	if len(resultsNew) != 1 || resultsNew[0].Name != "math.go" {
+		t.Fatalf("expected math.go in SearchFiles after rename, got: %v", resultsNew)
+	}
+
+	// 3. DeleteEntry should incrementally remove from cache
+	if err := indexer.DeleteEntry("pkg/math.go"); err != nil {
+		t.Fatalf("DeleteEntry failed: %v", err)
+	}
+
+	resultsDeleted := indexer.SearchFiles("math", 10)
+	if len(resultsDeleted) != 0 {
+		t.Fatalf("expected math.go to be deleted from cache, got: %v", resultsDeleted)
+	}
+}

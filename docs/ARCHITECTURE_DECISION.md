@@ -112,3 +112,25 @@ Because all workspace operations, Git commands, and file operations communicate 
 ```
 
 When Electrobun releases native PTY support (via Zig) and stabilizes Linux WebKitGTK bindings, Forge can transition its desktop shell without altering a single line of React UI or Go daemon code.
+
+---
+
+## 6. Evaluation: Go Server-Side Rendering (SSR) vs. Go-First Hybrid Backend
+
+### Problem Evaluation
+*Should Forge adopt Go Server-Side Rendering (SSR) with Go HTML templates to reduce frontend loading time and memory consumption?*
+
+### Architectural Findings
+1. **Desktop IDE Interactivity Bottleneck:** An IDE is not a static web document. The primary startup cost is initializing the Monaco Editor (canvas context, syntax tokenization Web Workers, text buffer allocation, line wrapping, and keyboard event loops). Go SSR cannot pre-render an interactive Monaco instance; the client-side JavaScript engine must still download, parse, and initialize Monaco regardless of whether the initial container HTML was served by Go or bundled locally.
+2. **Local HTTP Overhead:** Implementing Go SSR in a desktop application introduces an unnecessary local loopback HTTP server in Go. The webview must make network requests over HTTP instead of loading pre-compiled assets directly from disk (`file://`).
+3. **Hydration Penalty:** React cannot attach event handlers to server-rendered DOM nodes without executing a hydration pass that re-evaluates the client-side bundle, neutralizing any hypothetical startup gain.
+4. **Website vs. Desktop IDE Distinction:**
+   - **Public Website (`https://manish-npx.github.io/forge/`):** Pre-rendered HTML and SSR provide genuine SEO and First Contentful Paint (FCP) benefits for crawlers and initial visitors.
+   - **Desktop Application:** Statically bundled React + Monaco loaded from local disk is strictly faster, more reliable, and completely offline-safe.
+
+### Decision
+- **Reject Go SSR for the Desktop IDE UI.**
+- **Adopt the Go-First Hybrid Architecture:**
+  - Keep **TypeScript / React 19** for the interactive IDE interface, optimized via code splitting and lazy loading.
+  - Utilize **Go (`forge-daemon`)** aggressively for all computational, indexing, search, caching, and filesystem operations.
+

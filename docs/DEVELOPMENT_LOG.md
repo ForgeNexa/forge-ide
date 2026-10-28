@@ -27,6 +27,29 @@
   - Executed Milestone 1: Document outline symbols, definition discovery, and hover signatures now operational for Go, TypeScript, Python, and Rust.
   - All 15 automated functional flow tests passing cleanly.
 
+---
+
+### Entry 7: PR Automation, Go SSR Evaluation & Performance Optimization
+- **Timestamp:** 2026-10-28T21:20:00Z
+- **Milestone:** PR Automation & Frontend/Backend Performance Tuning
+- **Branch:** `feat/pr-automation-and-performance-optimization`
+- **Components Changed:**
+  - `.github/workflows/pr-automation.yml` (automated CI quality gates and safe auto-merge step)
+  - `docs/PR_AUTOMATION.md` (PR workflow guide, auto-merge safeguards, and troubleshooting)
+  - `docs/PERFORMANCE_AUDIT.md` (Go SSR evaluation, hybrid architecture analysis, bundle audit)
+  - `docs/PERFORMANCE_BENCHMARKS.md` (empirical runtime, bundle, memory, and CPU benchmarks)
+  - `docs/ARCHITECTURE_DECISION.md` (added Section 6: Go SSR vs Go-First Hybrid Backend)
+  - `apps/renderer/vite.config.ts` (implemented Rollup code splitting for vendor-react, vendor-monaco, vendor-xterm)
+  - `apps/renderer/src/App.tsx` (lazy loaded SettingsModal and ProductLandingPage via React.lazy & Suspense)
+  - `services/forge-daemon/pkg/workspace/indexer.go` (implemented in-memory incremental cache updates)
+  - `services/forge-daemon/pkg/workspace/indexer_test.go` (added TestIndexer_IncrementalCache unit test)
+- **Decisions & Findings:**
+  - Evaluated Go SSR: Concluded that Go SSR does not reduce time-to-first-usable-editor in a desktop IDE (Monaco requires client-side DOM layout and workers; hydration adds latency). Go SSR is valuable for website SEO, while desktop IDE benefits most from Go-first hybrid backend + lean client bundle.
+  - Reduced critical JavaScript initial bundle from 734.88 kB to 313.65 kB (-57.3% reduction); eliminated Vite > 500 kB chunk warning.
+  - Incremental cache in Go daemon allows file CRUD without full WalkDir scans (< 0.05 ms vs 5 ms).
+  - All 15 functional flow tests, Go race tests, and builds passing cleanly.
+
+
 
 ### Entry 1: Baseline Architecture & Electrobun Evaluation
 - **Timestamp:** 2026-10-28T14:30:00Z
@@ -63,6 +86,29 @@
   - Measured live metrics on Apple M5: Go daemon cold boot 9.30ms, idle memory 5.61 MB, 2,000 file indexing in 5.03ms.
   - Executed Milestone 1: Document outline symbols, definition discovery, and hover signatures now operational for Go, TypeScript, Python, and Rust.
   - All 15 automated functional flow tests passing cleanly.
+
+---
+
+### Entry 7: PR Automation, Go SSR Evaluation & Performance Optimization
+- **Timestamp:** 2026-10-28T21:20:00Z
+- **Milestone:** PR Automation & Frontend/Backend Performance Tuning
+- **Branch:** `feat/pr-automation-and-performance-optimization`
+- **Components Changed:**
+  - `.github/workflows/pr-automation.yml` (automated CI quality gates and safe auto-merge step)
+  - `docs/PR_AUTOMATION.md` (PR workflow guide, auto-merge safeguards, and troubleshooting)
+  - `docs/PERFORMANCE_AUDIT.md` (Go SSR evaluation, hybrid architecture analysis, bundle audit)
+  - `docs/PERFORMANCE_BENCHMARKS.md` (empirical runtime, bundle, memory, and CPU benchmarks)
+  - `docs/ARCHITECTURE_DECISION.md` (added Section 6: Go SSR vs Go-First Hybrid Backend)
+  - `apps/renderer/vite.config.ts` (implemented Rollup code splitting for vendor-react, vendor-monaco, vendor-xterm)
+  - `apps/renderer/src/App.tsx` (lazy loaded SettingsModal and ProductLandingPage via React.lazy & Suspense)
+  - `services/forge-daemon/pkg/workspace/indexer.go` (implemented in-memory incremental cache updates)
+  - `services/forge-daemon/pkg/workspace/indexer_test.go` (added TestIndexer_IncrementalCache unit test)
+- **Decisions & Findings:**
+  - Evaluated Go SSR: Concluded that Go SSR does not reduce time-to-first-usable-editor in a desktop IDE (Monaco requires client-side DOM layout and workers; hydration adds latency). Go SSR is valuable for website SEO, while desktop IDE benefits most from Go-first hybrid backend + lean client bundle.
+  - Reduced critical JavaScript initial bundle from 734.88 kB to 313.65 kB (-57.3% reduction); eliminated Vite > 500 kB chunk warning.
+  - Incremental cache in Go daemon allows file CRUD without full WalkDir scans (< 0.05 ms vs 5 ms).
+  - All 15 functional flow tests, Go race tests, and builds passing cleanly.
+
 
 
 ### Entry 2: Complete UI & Settings Overhaul
@@ -101,6 +147,29 @@
   - Measured live metrics on Apple M5: Go daemon cold boot 9.30ms, idle memory 5.61 MB, 2,000 file indexing in 5.03ms.
   - Executed Milestone 1: Document outline symbols, definition discovery, and hover signatures now operational for Go, TypeScript, Python, and Rust.
   - All 15 automated functional flow tests passing cleanly.
+
+---
+
+### Entry 7: PR Automation, Go SSR Evaluation & Performance Optimization
+- **Timestamp:** 2026-10-28T21:20:00Z
+- **Milestone:** PR Automation & Frontend/Backend Performance Tuning
+- **Branch:** `feat/pr-automation-and-performance-optimization`
+- **Components Changed:**
+  - `.github/workflows/pr-automation.yml` (automated CI quality gates and safe auto-merge step)
+  - `docs/PR_AUTOMATION.md` (PR workflow guide, auto-merge safeguards, and troubleshooting)
+  - `docs/PERFORMANCE_AUDIT.md` (Go SSR evaluation, hybrid architecture analysis, bundle audit)
+  - `docs/PERFORMANCE_BENCHMARKS.md` (empirical runtime, bundle, memory, and CPU benchmarks)
+  - `docs/ARCHITECTURE_DECISION.md` (added Section 6: Go SSR vs Go-First Hybrid Backend)
+  - `apps/renderer/vite.config.ts` (implemented Rollup code splitting for vendor-react, vendor-monaco, vendor-xterm)
+  - `apps/renderer/src/App.tsx` (lazy loaded SettingsModal and ProductLandingPage via React.lazy & Suspense)
+  - `services/forge-daemon/pkg/workspace/indexer.go` (implemented in-memory incremental cache updates)
+  - `services/forge-daemon/pkg/workspace/indexer_test.go` (added TestIndexer_IncrementalCache unit test)
+- **Decisions & Findings:**
+  - Evaluated Go SSR: Concluded that Go SSR does not reduce time-to-first-usable-editor in a desktop IDE (Monaco requires client-side DOM layout and workers; hydration adds latency). Go SSR is valuable for website SEO, while desktop IDE benefits most from Go-first hybrid backend + lean client bundle.
+  - Reduced critical JavaScript initial bundle from 734.88 kB to 313.65 kB (-57.3% reduction); eliminated Vite > 500 kB chunk warning.
+  - Incremental cache in Go daemon allows file CRUD without full WalkDir scans (< 0.05 ms vs 5 ms).
+  - All 15 functional flow tests, Go race tests, and builds passing cleanly.
+
 
 
 ### Entry 3: Mandatory Bottom Terminal Tool Window
@@ -141,6 +210,29 @@
   - Measured live metrics on Apple M5: Go daemon cold boot 9.30ms, idle memory 5.61 MB, 2,000 file indexing in 5.03ms.
   - Executed Milestone 1: Document outline symbols, definition discovery, and hover signatures now operational for Go, TypeScript, Python, and Rust.
   - All 15 automated functional flow tests passing cleanly.
+
+---
+
+### Entry 7: PR Automation, Go SSR Evaluation & Performance Optimization
+- **Timestamp:** 2026-10-28T21:20:00Z
+- **Milestone:** PR Automation & Frontend/Backend Performance Tuning
+- **Branch:** `feat/pr-automation-and-performance-optimization`
+- **Components Changed:**
+  - `.github/workflows/pr-automation.yml` (automated CI quality gates and safe auto-merge step)
+  - `docs/PR_AUTOMATION.md` (PR workflow guide, auto-merge safeguards, and troubleshooting)
+  - `docs/PERFORMANCE_AUDIT.md` (Go SSR evaluation, hybrid architecture analysis, bundle audit)
+  - `docs/PERFORMANCE_BENCHMARKS.md` (empirical runtime, bundle, memory, and CPU benchmarks)
+  - `docs/ARCHITECTURE_DECISION.md` (added Section 6: Go SSR vs Go-First Hybrid Backend)
+  - `apps/renderer/vite.config.ts` (implemented Rollup code splitting for vendor-react, vendor-monaco, vendor-xterm)
+  - `apps/renderer/src/App.tsx` (lazy loaded SettingsModal and ProductLandingPage via React.lazy & Suspense)
+  - `services/forge-daemon/pkg/workspace/indexer.go` (implemented in-memory incremental cache updates)
+  - `services/forge-daemon/pkg/workspace/indexer_test.go` (added TestIndexer_IncrementalCache unit test)
+- **Decisions & Findings:**
+  - Evaluated Go SSR: Concluded that Go SSR does not reduce time-to-first-usable-editor in a desktop IDE (Monaco requires client-side DOM layout and workers; hydration adds latency). Go SSR is valuable for website SEO, while desktop IDE benefits most from Go-first hybrid backend + lean client bundle.
+  - Reduced critical JavaScript initial bundle from 734.88 kB to 313.65 kB (-57.3% reduction); eliminated Vite > 500 kB chunk warning.
+  - Incremental cache in Go daemon allows file CRUD without full WalkDir scans (< 0.05 ms vs 5 ms).
+  - All 15 functional flow tests, Go race tests, and builds passing cleanly.
+
 
 
 ### Entry 4: File Previews, Autosave & Code Intelligence
@@ -184,6 +276,29 @@
   - Measured live metrics on Apple M5: Go daemon cold boot 9.30ms, idle memory 5.61 MB, 2,000 file indexing in 5.03ms.
   - Executed Milestone 1: Document outline symbols, definition discovery, and hover signatures now operational for Go, TypeScript, Python, and Rust.
   - All 15 automated functional flow tests passing cleanly.
+
+---
+
+### Entry 7: PR Automation, Go SSR Evaluation & Performance Optimization
+- **Timestamp:** 2026-10-28T21:20:00Z
+- **Milestone:** PR Automation & Frontend/Backend Performance Tuning
+- **Branch:** `feat/pr-automation-and-performance-optimization`
+- **Components Changed:**
+  - `.github/workflows/pr-automation.yml` (automated CI quality gates and safe auto-merge step)
+  - `docs/PR_AUTOMATION.md` (PR workflow guide, auto-merge safeguards, and troubleshooting)
+  - `docs/PERFORMANCE_AUDIT.md` (Go SSR evaluation, hybrid architecture analysis, bundle audit)
+  - `docs/PERFORMANCE_BENCHMARKS.md` (empirical runtime, bundle, memory, and CPU benchmarks)
+  - `docs/ARCHITECTURE_DECISION.md` (added Section 6: Go SSR vs Go-First Hybrid Backend)
+  - `apps/renderer/vite.config.ts` (implemented Rollup code splitting for vendor-react, vendor-monaco, vendor-xterm)
+  - `apps/renderer/src/App.tsx` (lazy loaded SettingsModal and ProductLandingPage via React.lazy & Suspense)
+  - `services/forge-daemon/pkg/workspace/indexer.go` (implemented in-memory incremental cache updates)
+  - `services/forge-daemon/pkg/workspace/indexer_test.go` (added TestIndexer_IncrementalCache unit test)
+- **Decisions & Findings:**
+  - Evaluated Go SSR: Concluded that Go SSR does not reduce time-to-first-usable-editor in a desktop IDE (Monaco requires client-side DOM layout and workers; hydration adds latency). Go SSR is valuable for website SEO, while desktop IDE benefits most from Go-first hybrid backend + lean client bundle.
+  - Reduced critical JavaScript initial bundle from 734.88 kB to 313.65 kB (-57.3% reduction); eliminated Vite > 500 kB chunk warning.
+  - Incremental cache in Go daemon allows file CRUD without full WalkDir scans (< 0.05 ms vs 5 ms).
+  - All 15 functional flow tests, Go race tests, and builds passing cleanly.
+
 
 
 ### Entry 5: Structured Logging & CI/CD Packaging

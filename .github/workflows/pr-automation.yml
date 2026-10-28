@@ -1,0 +1,74 @@
+name: PR Automation & Quality Gates
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+  statuses: read
+
+jobs:
+  quality-gates:
+    name: Automated Quality Gates
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: 'npm'
+
+      - name: Install dependencies cleanly
+        run: npm ci
+
+      - name: Security Vulnerability Audit
+        run: npm audit --audit-level=high
+
+      - name: Go Unit & Race Tests
+        run: |
+          cd services/forge-daemon
+          go vet ./...
+          go test -v -race ./...
+
+      - name: Monorepo Build (TypeScript 7 & Electron)
+        run: npm run build
+
+      - name: Monorepo End-to-End Tests
+        run: npm test
+
+  auto-merge:
+    name: Safe Auto-Merge Evaluation
+    needs: quality-gates
+    runs-on: ubuntu-latest
+    if: |
+      github.event.pull_request.draft == false &&
+      !contains(github.event.pull_request.labels.*.name, 'requires-human-review') &&
+      !contains(github.event.pull_request.title, 'BREAKING') &&
+      !contains(github.event.pull_request.title, 'major') &&
+      !contains(github.event.pull_request.title, 'release:')
+
+    steps:
+      - name: Enable GitHub Auto-Merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          echo "Evaluating PR auto-merge for: $PR_URL"
+          # Attempt auto-merge using GitHub CLI; gracefully logs if repository settings have auto-merge disabled
+          gh pr merge "$PR_URL" --auto --squash || echo "Notice: Auto-merge could not be automatically queued (check repository settings or permissions)."
