@@ -8,7 +8,7 @@
     "start": "electron ./dist/main.js"
   },
   "dependencies": {
-    "@my-forge/shared-protocol": "*"
+    "@my-forge/shared-protocol": "workspace:*"
   },
   "devDependencies": {
     "electron": "^45.1.0",

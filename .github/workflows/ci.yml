@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        node-version: [20.x, 22.x]
+        node-version: [22.x]
         go-version: ['1.23.x']
 
     steps:
@@ -27,11 +27,16 @@ jobs:
           go-version: ${{ matrix.go-version }}
           cache-dependency-path: services/forge-daemon/go.sum
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+
       - name: Set up Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Run Go Unit & Race Tests
         shell: bash
@@ -50,11 +55,11 @@ jobs:
             go build -o bin/forge-daemon.exe ./cmd/forge-daemon
           fi
 
-      - name: Install Monorepo Dependencies
-        run: npm install
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
 
-      - name: Build Shared Protocol & Renderer
-        run: npm run build
+      - name: Build Monorepo Workspaces & Assets
+        run: pnpm run build
 
       - name: Run Monorepo Test Flows
-        run: npm test
+        run: pnpm test
