@@ -1,6 +1,6 @@
 # Forge IDE — Fast, Go-Powered Developer Workspace
 
-[![Version](https://img.shields.io/badge/version-v0.2.1-blue?style=flat-square)](https://github.com/manish-npx/forge/releases)
+[![Version](https://img.shields.io/badge/version-v0.2.1-blue?style=flat-square)](https://github.com/ForgeNexa/forge-ide/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
 [![Go Version](https://img.shields.io/badge/Go-1.26.4%20%7C%201.27.3-00ADD8?style=flat-square&logo=go)](https://golang.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-7.0.2-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
@@ -11,7 +11,7 @@
 [![Live Demo](https://img.shields.io/badge/Live%20Web%20IDE-Online-success?style=flat-square&logo=github)](https://manish-npx.github.io/forge/)
 
 > **"Your workspace for building software."**  
-> Built by **Yantra Works** · An open-source, local-first code editor and IDE combining Monaco Editor ergonomics, authentic **2026 Dark Theme**, **Material Icon Theme**, an **IntelliJ-style bottom tool window**, a **Go-First concurrent backend (`forge-daemon`)**, a **22-language LSP registry**, loopback HTTP REST API, and optional **private local AI autocomplete**.
+> Built by **ForgeNexa** · An open-source, local-first code editor and IDE combining Monaco Editor ergonomics, authentic **2026 Dark Theme**, **Material Icon Theme**, an **IntelliJ-style bottom tool window**, a **Go-First concurrent backend (`forge-daemon`)**, a **22-language LSP registry**, loopback HTTP REST API, and optional **private local AI autocomplete**.
 
 ---
 
@@ -149,7 +149,7 @@ Unlike bloated monolithic editors that ingest gigabytes of RAM before typing a s
 ### Installation
 ```bash
 # 1. Clone repository
-git clone https://github.com/manish-npx/forge.git
+git clone https://github.com/ForgeNexa/forge-ide.git
 cd forge
 
 # 2. Install monorepo dependencies cleanly
@@ -208,7 +208,7 @@ We welcome community contributions! Please review our guidelines before opening 
 ## 📄 License & Attribution
 
 Forge IDE is open-source software licensed under the [MIT License](LICENSE).  
-Copyright (c) 2026 Yantra Works.
+Copyright (c) 2026 ForgeNexa.
 
 ### Third-Party Acknowledgements
 - **Monaco Editor:** Microsoft Corporation ([MIT License](https://github.com/microsoft/monaco-editor))

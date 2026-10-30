@@ -1,6 +1,6 @@
 # Forge IDE — Settings Reference Catalog
 
-**Product:** Forge IDE (by Yantra Works)  
+**Product:** Forge IDE (by ForgeNexa)  
 **Configuration File:** `~/.forge/settings.json`  
 **API:** `window.myForgeAPI.getSettings()`, `window.myForgeAPI.saveSettings()`
 

@@ -1,7 +1,7 @@
 export default {
   app: {
     name: 'Forge IDE (Electrobun Experiment)',
-    identifier: 'com.yantra.forge.electrobun',
+    identifier: 'com.forgenexa.forge.electrobun',
     version: '0.1.0',
   },
   build: {

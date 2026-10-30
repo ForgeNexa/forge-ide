@@ -1,6 +1,6 @@
 # Contributing to Forge IDE
 
-Thank you for your interest in contributing to **Forge IDE**! Forge is an open-source, local-first code editor and IDE developed by **Yantra Works** and the community.
+Thank you for your interest in contributing to **Forge IDE**! Forge is an open-source, local-first code editor and IDE developed by **ForgeNexa** and the community.
 
 We value contributions of all kinds: code improvements, bug fixes, documentation, language server configurations, accessibility enhancements, testing, and UI refinements.
 

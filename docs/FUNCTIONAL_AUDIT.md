@@ -1,6 +1,6 @@
 # Functional Audit: forge
 **Product:** forge (formerly *my-forge*)  
-**Company:** Yantra Works  
+**Company:** ForgeNexa  
 **Audit Date:** 2026-10-28  
 **Auditor:** Lead Systems Architect & Developer Tools Engineer
 
@@ -18,7 +18,7 @@ While the baseline foundation, Go indexer, and Monaco editor integration are cle
 
 | Feature | Current Implementation | Status | Evidence | Root Cause | Fix Implementation | Verification |
 |---|---|---|---|---|---|---|
-| **Terminal Integration** | `apps/renderer/src/components/BottomPanel.tsx` (lines 103-110) | **Broken (Simulated)** | Prints static text `yantra-works:~/workspace$ go version && git status` | No real PTY spawned; no IPC channel between renderer and native shell | Integrate `node-pty` in Electron main process, wire bi-directional IPC (`terminal:create`, `terminal:write`, `terminal:resize`, `terminal:data`), and render via `@xterm/xterm` in React | Run real shell commands (`pwd`, `git status`, `echo test`), verify exit code and process termination |
+| **Terminal Integration** | `apps/renderer/src/components/BottomPanel.tsx` (lines 103-110) | **Broken (Simulated)** | Prints static text `forgenexa:~/workspace$ go version && git status` | No real PTY spawned; no IPC channel between renderer and native shell | Integrate `node-pty` in Electron main process, wire bi-directional IPC (`terminal:create`, `terminal:write`, `terminal:resize`, `terminal:data`), and render via `@xterm/xterm` in React | Run real shell commands (`pwd`, `git status`, `echo test`), verify exit code and process termination |
 | **Git Status & Source Control** | `apps/renderer/src/App.tsx` (line 433: `branch="main"`), `ActivityBar.tsx` | **Broken (Hardcoded / Missing)** | Status bar always displays `"main"`; clicking Git icon opens empty sidebar | No Git CLI execution; no IPC handlers for `git status`, `git diff`, `git add`, `git commit` | Add safe `GitManager` in Electron main using `execFile` with argument arrays; implement Source Control sidebar with Staged/Unstaged lists, diff viewer, commit box, and branch switcher | Execute against test Git repo: stage files, commit changes, switch branches, verify with independent `git status` |
 | **Explorer File/Folder CRUD** | `apps/renderer/src/components/FileTree.tsx`, `App.tsx` | **Partial** | Can view files and click to open, but cannot create, rename, or delete files/folders from UI | Missing UI buttons and context menus for New File, New Folder, Rename, Delete; missing IPC routes for deletion/renaming | Add New File/Folder action buttons to Explorer header; add right-click context menu; implement IPC handlers `fs:createFile`, `fs:createFolder`, `fs:rename`, `fs:delete`, `fs:showInFolder` | Create, rename, delete files and folders via UI and verify exact filesystem state |
 | **Unsaved Edits Confirmation** | `apps/renderer/src/App.tsx` (lines 189-199: `handleCloseTab`) | **Missing** | Closing a tab with dirty changes immediately closes and discards edits | `handleCloseTab` directly filters out the tab without checking `isDirty` | Add confirmation modal with options: "Save", "Don't Save", "Cancel". If Cancel, keep tab open and preserve dirty buffer intact | Edit file, click close tab, select Cancel, verify edits remain; select Don't Save, verify closed; select Save, verify written |

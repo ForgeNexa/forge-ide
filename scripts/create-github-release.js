@@ -10,7 +10,7 @@ const RELEASE_NAME = 'Forge IDE v0.2.0 — Production Baseline Release';
 
 const RELEASE_BODY = `## Forge IDE v0.2.0 — Production Baseline Release
 
-**Forge IDE** (*my-forge*, by **Yantra Works**) — Your workspace for building software.
+**Forge IDE** (*my-forge*, by **ForgeNexa**) — Your workspace for building software.
 
 ### ✨ What's New in v0.2.0
 - **Native Go Daemon (\`forge-daemon\`):** Sub-millisecond recursive indexing and fast regex search via line-delimited JSON-RPC 2.0 stdio.

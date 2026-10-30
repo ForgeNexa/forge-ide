@@ -1,8 +1,8 @@
 # Forge IDE — Release Engineering & Distribution Guide
 
-**Product:** Forge IDE (by Yantra Works)  
+**Product:** Forge IDE (by ForgeNexa)  
 **Current Version:** 0.2.0  
-**Repository:** `https://github.com/manish-npx/forge`
+**Repository:** `https://github.com/ForgeNexa/forge-ide`
 
 ---
 
@@ -94,7 +94,7 @@ git push origin v0.2.0
 ```
 
 ### Step 5: Publish the GitHub Release
-1. Open `https://github.com/manish-npx/forge/releases/new`.
+1. Open `https://github.com/ForgeNexa/forge-ide/releases/new`.
 2. Select tag `v0.2.0`.
 3. Set title: `Forge IDE v0.2.0 — Complete UI, Settings, LSP & Bottom Tool Window`.
 4. Paste verified release notes from `CHANGELOG.md`.

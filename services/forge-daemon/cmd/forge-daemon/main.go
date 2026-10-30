@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/yantra-works/my-forge/services/forge-daemon/pkg/server"
+	"github.com/ForgeNexa/forge-ide/services/forge-daemon/pkg/server"
 )
 
 func main() {

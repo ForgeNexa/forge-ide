@@ -1,6 +1,6 @@
 # Security Policy — Forge IDE
 
-**Organization:** Yantra Works  
+**Organization:** ForgeNexa  
 **Product:** Forge IDE  
 
 ---
@@ -22,7 +22,7 @@ The Forge team takes security vulnerabilities seriously. We ask that all securit
 
 ### How to Report:
 - **Email:** Please report security issues directly to maintainers via GitHub private security advisories:
-  👉 https://github.com/manish-npx/forge/security/advisories/new
+  👉 https://github.com/ForgeNexa/forge-ide/security/advisories/new
 - **Information to Include:**
   1. A clear description of the vulnerability and its potential impact.
   2. Proof-of-concept code, minimal reproduction script, or exact reproduction steps.

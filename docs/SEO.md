@@ -10,9 +10,9 @@ The primary landing page (`apps/renderer/index.html`) implements modern HTML5 he
 
 | Tag | Value | Purpose |
 | :--- | :--- | :--- |
-| `<title>` | `Forge IDE — Fast, Lightweight Open Source Code Editor & IDE by Yantra Works` | Search engine results title (< 70 characters displayed) |
-| `<meta name="description">` | `Forge (my-forge) is a fast, lightweight, distraction-free desktop & web IDE powered by Monaco Editor, a native Go workspace daemon, and local-first AI autocomplete. Built for developers by Yantra Works.` | Search snippet summary (155 characters) |
-| `<meta name="keywords">` | `forge, forge ide, my-forge, yantra works, code editor, lightweight ide, vs code alternative, monaco editor, go daemon, web ide, local ai autocomplete, developer tools, open source ide` | Target discovery keywords |
+| `<title>` | `Forge IDE — Fast, Lightweight Open Source Code Editor & IDE by ForgeNexa` | Search engine results title (< 70 characters displayed) |
+| `<meta name="description">` | `Forge (my-forge) is a fast, lightweight, distraction-free desktop & web IDE powered by Monaco Editor, a native Go workspace daemon, and local-first AI autocomplete. Built for developers by ForgeNexa.` | Search snippet summary (155 characters) |
+| `<meta name="keywords">` | `forge, forge ide, my-forge, forgenexa, code editor, lightweight ide, vs code alternative, monaco editor, go daemon, web ide, local ai autocomplete, developer tools, open source ide` | Target discovery keywords |
 | `<link rel="canonical">` | `https://manish-npx.github.io/forge/` | Prevents duplicate content indexing |
 | `<meta name="robots">` | `index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1` | Instructs bots to index and generate rich snippets |
 | `<meta name="theme-color">` | `#121314` | Matches browser frame to Forge's 2026 Dark UI |
@@ -58,11 +58,11 @@ Forge includes machine-readable JSON-LD data embedded directly in the `<head>` o
       "operatingSystem": "macOS, Windows, Linux, Web",
       "softwareVersion": "0.2.0",
       "url": "https://manish-npx.github.io/forge/",
-      "downloadUrl": "https://github.com/manish-npx/forge/releases/tag/v0.2.0",
-      "license": "https://github.com/manish-npx/forge/blob/main/LICENSE",
+      "downloadUrl": "https://github.com/ForgeNexa/forge-ide/releases/tag/v0.2.0",
+      "license": "https://github.com/ForgeNexa/forge-ide/blob/main/LICENSE",
       "author": {
         "@type": "Organization",
-        "name": "Yantra Works",
+        "name": "ForgeNexa",
         "url": "https://github.com/manish-npx"
       },
       "offers": {
@@ -76,10 +76,10 @@ Forge includes machine-readable JSON-LD data embedded directly in the `<head>` o
       "@id": "https://manish-npx.github.io/forge/#website",
       "url": "https://manish-npx.github.io/forge/",
       "name": "Forge IDE",
-      "description": "Your workspace for building software. Fast, lightweight desktop & web code editor by Yantra Works.",
+      "description": "Your workspace for building software. Fast, lightweight desktop & web code editor by ForgeNexa.",
       "publisher": {
         "@type": "Organization",
-        "name": "Yantra Works",
+        "name": "ForgeNexa",
         "url": "https://github.com/manish-npx"
       }
     }

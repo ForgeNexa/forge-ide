@@ -1,6 +1,6 @@
 # Forge IDE — UI & UX Comprehensive Audit
 
-**Product:** Forge IDE (by Yantra Works)  
+**Product:** Forge IDE (by ForgeNexa)  
 **Date:** 2026-10-28  
 **Auditor:** Senior IDE Architect & UI/UX Specialist  
 

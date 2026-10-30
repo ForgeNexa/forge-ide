@@ -106,7 +106,7 @@ export const ReleaseShowcase: FC<ReleaseShowcaseProps> = ({
             </button>
 
             <a
-              href="https://github.com/manish-npx/forge"
+              href="https://github.com/ForgeNexa/forge-ide"
               target="_blank"
               rel="noreferrer"
               style={{
@@ -346,7 +346,7 @@ export const ReleaseShowcase: FC<ReleaseShowcaseProps> = ({
           }}
         >
           <div>
-            <strong>forge</strong> by <strong>Yantra Works</strong> • Distributed under the MIT License
+            <strong>forge</strong> by <strong>ForgeNexa</strong> • Distributed under the MIT License
           </div>
           <div>
             <button

@@ -16,7 +16,7 @@ export const DIMENSIONS = {
 
 export const PRODUCT_INFO = {
   NAME: 'my-forge',
-  COMPANY: 'Yantra Works',
+  COMPANY: 'ForgeNexa',
   TAGLINE: 'Your workspace for building software.',
   VERSION: '0.1.0',
 };

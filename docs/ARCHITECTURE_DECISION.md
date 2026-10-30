@@ -3,7 +3,7 @@
 **Status:** APPROVED (v0.2.0 Production Baseline)  
 **Date:** 2026-10-28  
 **Subject:** Desktop Shell Framework Evaluation (Electron vs. Electrobun vs. Wails) & Go Daemon Boundary  
-**Context:** Forge IDE (`my-forge`), by **Yantra Works**  
+**Context:** Forge IDE (`my-forge`), by **ForgeNexa**  
 
 ---
 

@@ -1,6 +1,6 @@
 # Forge IDE — Reproducible Build & Packaging Guide
 
-**Product:** Forge IDE (by Yantra Works)  
+**Product:** Forge IDE (by ForgeNexa)  
 **Version:** 0.2.0  
 
 ---

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/yantra-works/my-forge/services/forge-daemon/pkg/protocol"
+	"github.com/ForgeNexa/forge-ide/services/forge-daemon/pkg/protocol"
 )
 
 func TestServer_RPCFlow(t *testing.T) {

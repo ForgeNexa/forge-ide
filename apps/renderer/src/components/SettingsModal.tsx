@@ -155,7 +155,7 @@ export const SettingsModal: FC<SettingsModalProps> = ({
                 Forge IDE Settings
               </div>
               <div style={{ fontSize: '11px', color: 'var(--forge-text-muted)' }}>
-                Yantra Works · Antigravity Configuration Engine
+                ForgeNexa Configuration Engine
               </div>
             </div>
           </div>
