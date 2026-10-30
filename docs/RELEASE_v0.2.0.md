@@ -1,15 +1,15 @@
 # forge v0.2.0 — Release Notes & Architecture Showcase
-**By Yantra Works** • *Your workspace for building software.*
+**By ForgeNexa** • *Your workspace for building software.*
 
 Live Web Preview & Interactive Deployment: [https://manish-npx.github.io/forge/](https://manish-npx.github.io/forge/)  
-GitHub Repository: [https://github.com/manish-npx/forge](https://github.com/manish-npx/forge)
+GitHub Repository: [https://github.com/ForgeNexa/forge-ide](https://github.com/ForgeNexa/forge-ide)
 
 ---
 
 ## 🚀 What's New in v0.2.0
 
 ### 1. CodeEdit-Inspired macOS Design
-- **Compact Titlebar:** Integrated macOS traffic lights, workspace status, centered quick open trigger (`Cmd+P`), and Yantra Works release pill.
+- **Compact Titlebar:** Integrated macOS traffic lights, workspace status, centered quick open trigger (`Cmd+P`), and ForgeNexa release pill.
 - **Breadcrumbs Bar:** Live file path hierarchy and direct one-click "Run File" (`▶ Run`) execution.
 - **Clean Explorer Sidebar:** High-contrast icons, inline directory expansion, file creation/deletion, and file rename context menus.
 - **Unsaved Changes Safeguard:** Unsaved edits dialog prompts before closing tabs (`Save`, `Don't Save`, `Cancel`).

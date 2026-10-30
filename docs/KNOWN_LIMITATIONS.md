@@ -1,6 +1,6 @@
 # Known Limitations & Compatibility Roadmap: forge
 **Product:** forge  
-**Company:** Yantra Works  
+**Company:** ForgeNexa  
 **Last Updated:** 2026-10-28  
 
 ---

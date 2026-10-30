@@ -8,12 +8,12 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/yantra-works/my-forge/services/forge-daemon/pkg/ai"
-	"github.com/yantra-works/my-forge/services/forge-daemon/pkg/git"
-	"github.com/yantra-works/my-forge/services/forge-daemon/pkg/lsp"
-	"github.com/yantra-works/my-forge/services/forge-daemon/pkg/settings"
-	"github.com/yantra-works/my-forge/services/forge-daemon/pkg/tasks"
-	"github.com/yantra-works/my-forge/services/forge-daemon/pkg/workspace"
+	"github.com/ForgeNexa/forge-ide/services/forge-daemon/pkg/ai"
+	"github.com/ForgeNexa/forge-ide/services/forge-daemon/pkg/git"
+	"github.com/ForgeNexa/forge-ide/services/forge-daemon/pkg/lsp"
+	"github.com/ForgeNexa/forge-ide/services/forge-daemon/pkg/settings"
+	"github.com/ForgeNexa/forge-ide/services/forge-daemon/pkg/tasks"
+	"github.com/ForgeNexa/forge-ide/services/forge-daemon/pkg/workspace"
 )
 
 func TestRouter_AuthAndEndpoints(t *testing.T) {

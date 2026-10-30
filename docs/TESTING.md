@@ -1,5 +1,5 @@
 # Testing & Quality Assurance Guide: forge
-**Product:** forge (by Yantra Works)  
+**Product:** forge (by ForgeNexa)  
 **Date:** 2026-10-28  
 
 ---

@@ -368,7 +368,7 @@ export const App: FC = () => {
           content = `// Error reading file: ${err.message}`;
         }
       } else {
-        content = `// forge Web Preview\n// File: ${file.relativePath}\n\npackage main\n\nimport "fmt"\n\nfunc main() {\n\tfmt.Println("Welcome to forge by Yantra Works!")\n}\n`;
+        content = `// forge Web Preview\n// File: ${file.relativePath}\n\npackage main\n\nimport "fmt"\n\nfunc main() {\n\tfmt.Println("Welcome to forge by ForgeNexa!")\n}\n`;
       }
     }
 
@@ -897,7 +897,7 @@ export const App: FC = () => {
             <span>{showProductWebsite ? '💻' : '🌐'}</span>
             <span>{showProductWebsite ? 'Back to Editor' : isWebPreview ? 'Product Site' : 'Website & Docs'}</span>
           </button>
-          <span>Yantra Works</span>
+          <span>ForgeNexa</span>
         </div>
       </div>
 

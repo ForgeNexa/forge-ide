@@ -1,7 +1,7 @@
 # Forge IDE — Chronological Development Log
 
-**Product:** Forge IDE (by Yantra Works)  
-**Repository:** `https://github.com/manish-npx/forge`  
+**Product:** Forge IDE (by ForgeNexa)  
+**Repository:** `https://github.com/ForgeNexa/forge-ide`  
 
 ---
 

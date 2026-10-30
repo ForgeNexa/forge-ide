@@ -1,5 +1,5 @@
 # Architecture Decision Records (ADRs) — Forge IDE
-**Company:** Yantra Works  
+**Company:** ForgeNexa  
 **Status:** Approved & Implemented  
 **Date:** 2026-10-28  
 

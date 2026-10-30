@@ -1,7 +1,7 @@
 # Forge Baseline Audit & Performance Metrics
 **Date:** 2026-10-28  
 **Environment:** macOS Darwin 24.6.0 (Apple Silicon M-series, arm64), Node.js v24.18.0, Go 1.26.4 darwin/arm64  
-**Product:** Forge (by Yantra Works)  
+**Product:** Forge (by ForgeNexa)  
 **Baseline Version:** v0.3.0  
 
 ---

@@ -8,12 +8,12 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/yantra-works/my-forge/services/forge-daemon/pkg/ai"
-	"github.com/yantra-works/my-forge/services/forge-daemon/pkg/git"
-	"github.com/yantra-works/my-forge/services/forge-daemon/pkg/lsp"
-	"github.com/yantra-works/my-forge/services/forge-daemon/pkg/settings"
-	"github.com/yantra-works/my-forge/services/forge-daemon/pkg/tasks"
-	"github.com/yantra-works/my-forge/services/forge-daemon/pkg/workspace"
+	"github.com/ForgeNexa/forge-ide/services/forge-daemon/pkg/ai"
+	"github.com/ForgeNexa/forge-ide/services/forge-daemon/pkg/git"
+	"github.com/ForgeNexa/forge-ide/services/forge-daemon/pkg/lsp"
+	"github.com/ForgeNexa/forge-ide/services/forge-daemon/pkg/settings"
+	"github.com/ForgeNexa/forge-ide/services/forge-daemon/pkg/tasks"
+	"github.com/ForgeNexa/forge-ide/services/forge-daemon/pkg/workspace"
 )
 
 // ServerDependencies groups service references needed by the HTTP API.

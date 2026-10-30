@@ -1,6 +1,6 @@
 # Forge IDE Implementation Plan
 **Product:** Forge — A Fast, Go-Powered Developer IDE  
-**Company:** Yantra Works  
+**Company:** ForgeNexa  
 **Target Version:** v0.3.0  
 **Status:** In Progress  
 

@@ -7,9 +7,9 @@ We extend our sincere gratitude to everyone who has contributed code, documentat
 ## 👥 Core Maintainers & Contributors
 
 - **Manish Yadav** ([@manish-npx](https://github.com/manish-npx)) — Project Architect, Lead Engineer & Maintainer
-- **Yantra Works Community** — Engineering, Architecture, and Design
+- **ForgeNexa Community** — Engineering, Architecture, and Design
 
-*(All contributors who have merged pull requests are recognized in release notes and on the [GitHub Contributor Graph](https://github.com/manish-npx/forge/graphs/contributors).)*
+*(All contributors who have merged pull requests are recognized in release notes and on the [GitHub Contributor Graph](https://github.com/ForgeNexa/forge-ide/graphs/contributors).)*
 
 ---
 

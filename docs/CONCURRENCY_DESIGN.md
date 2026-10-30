@@ -2,7 +2,7 @@
 
 **Author:** Principal Systems Architect & IDE Engineer  
 **Date:** 2026-10-28  
-**Repository:** `https://github.com/manish-npx/forge`  
+**Repository:** `https://github.com/ForgeNexa/forge-ide`  
 **Daemon Module:** `services/forge-daemon`  
 
 ---

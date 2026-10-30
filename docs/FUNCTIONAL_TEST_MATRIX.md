@@ -1,7 +1,7 @@
 # Functional Test Matrix: forge
 **Date:** 2026-10-28  
 **Release Target:** v0.2.0 Functional Verification  
-**Author:** Yantra Works Quality & Systems Engineering  
+**Author:** ForgeNexa Quality & Systems Engineering  
 
 ---
 

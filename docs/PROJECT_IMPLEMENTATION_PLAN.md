@@ -2,7 +2,7 @@
 
 **Author:** Principal Systems Architect & Lead IDE Engineer  
 **Date:** 2026-10-28  
-**Repository:** `https://github.com/manish-npx/forge`  
+**Repository:** `https://github.com/ForgeNexa/forge-ide`  
 **Current Baseline:** Version 0.2.0 (Electron 35 + React 19 + Monaco Editor + Go Daemon)  
 
 ---

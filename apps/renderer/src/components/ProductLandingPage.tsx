@@ -54,13 +54,13 @@ export const ProductLandingPage: FC<ProductLandingPageProps> = ({
             </div>
             <div>
               <span style={{ fontSize: '18px', fontWeight: 800, letterSpacing: '-0.3px' }}>forge</span>
-              <span style={{ fontSize: '11px', color: 'var(--forge-text-muted)', marginLeft: 8 }}>by Yantra Works</span>
+              <span style={{ fontSize: '11px', color: 'var(--forge-text-muted)', marginLeft: 8 }}>by ForgeNexa</span>
             </div>
           </div>
 
           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
             <a
-              href="https://github.com/manish-npx/forge"
+              href="https://github.com/ForgeNexa/forge-ide"
               target="_blank"
               rel="noreferrer"
               style={{
@@ -162,7 +162,7 @@ export const ProductLandingPage: FC<ProductLandingPageProps> = ({
             </button>
 
             <a
-              href="https://github.com/manish-npx/forge"
+              href="https://github.com/ForgeNexa/forge-ide"
               target="_blank"
               rel="noreferrer"
               style={{
@@ -329,7 +329,7 @@ export const ProductLandingPage: FC<ProductLandingPageProps> = ({
               </h3>
             </div>
             <a
-              href="https://github.com/manish-npx/forge/releases"
+              href="https://github.com/ForgeNexa/forge-ide/releases"
               target="_blank"
               rel="noreferrer"
               style={{
@@ -354,7 +354,7 @@ export const ProductLandingPage: FC<ProductLandingPageProps> = ({
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 12, marginBottom: 20 }}>
             {/* macOS Apple Silicon */}
             <a
-              href={`https://github.com/manish-npx/forge/releases/download/${version}/forge-daemon-darwin-arm64`}
+              href={`https://github.com/ForgeNexa/forge-ide/releases/download/${version}/forge-daemon-darwin-arm64`}
               target="_blank"
               rel="noreferrer"
               style={{
@@ -378,7 +378,7 @@ export const ProductLandingPage: FC<ProductLandingPageProps> = ({
 
             {/* macOS Intel */}
             <a
-              href={`https://github.com/manish-npx/forge/releases/download/${version}/forge-daemon-darwin-amd64`}
+              href={`https://github.com/ForgeNexa/forge-ide/releases/download/${version}/forge-daemon-darwin-amd64`}
               target="_blank"
               rel="noreferrer"
               style={{
@@ -401,7 +401,7 @@ export const ProductLandingPage: FC<ProductLandingPageProps> = ({
 
             {/* Linux x64 */}
             <a
-              href={`https://github.com/manish-npx/forge/releases/download/${version}/forge-daemon-linux-amd64`}
+              href={`https://github.com/ForgeNexa/forge-ide/releases/download/${version}/forge-daemon-linux-amd64`}
               target="_blank"
               rel="noreferrer"
               style={{
@@ -424,7 +424,7 @@ export const ProductLandingPage: FC<ProductLandingPageProps> = ({
 
             {/* Linux ARM64 */}
             <a
-              href={`https://github.com/manish-npx/forge/releases/download/${version}/forge-daemon-linux-arm64`}
+              href={`https://github.com/ForgeNexa/forge-ide/releases/download/${version}/forge-daemon-linux-arm64`}
               target="_blank"
               rel="noreferrer"
               style={{
@@ -447,7 +447,7 @@ export const ProductLandingPage: FC<ProductLandingPageProps> = ({
 
             {/* Windows x64 */}
             <a
-              href={`https://github.com/manish-npx/forge/releases/download/${version}/forge-daemon-windows-amd64.exe`}
+              href={`https://github.com/ForgeNexa/forge-ide/releases/download/${version}/forge-daemon-windows-amd64.exe`}
               target="_blank"
               rel="noreferrer"
               style={{
@@ -475,7 +475,7 @@ export const ProductLandingPage: FC<ProductLandingPageProps> = ({
               🔒 Cryptographic SHA-256 checksums available for release verification.
             </span>
             <a
-              href={`https://github.com/manish-npx/forge/releases/download/${version}/SHA256SUMS.txt`}
+              href={`https://github.com/ForgeNexa/forge-ide/releases/download/${version}/SHA256SUMS.txt`}
               target="_blank"
               rel="noreferrer"
               style={{ color: 'var(--forge-accent)', fontWeight: 600, textDecoration: 'none' }}
@@ -674,7 +674,7 @@ export const ProductLandingPage: FC<ProductLandingPageProps> = ({
             }}
           >
 {`# 1. Clone repository
-git clone https://github.com/manish-npx/forge.git
+git clone https://github.com/ForgeNexa/forge-ide.git
 cd forge
 
 # 2. Install dependencies & build daemon
@@ -701,21 +701,21 @@ npm start`}
           }}
         >
           <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
-            <a href="https://github.com/manish-npx/forge" target="_blank" rel="noreferrer" style={{ color: 'var(--forge-text-secondary)', textDecoration: 'none' }}>GitHub Repository</a>
+            <a href="https://github.com/ForgeNexa/forge-ide" target="_blank" rel="noreferrer" style={{ color: 'var(--forge-text-secondary)', textDecoration: 'none' }}>GitHub Repository</a>
             <span>•</span>
-            <a href="https://github.com/manish-npx/forge/releases" target="_blank" rel="noreferrer" style={{ color: 'var(--forge-text-secondary)', textDecoration: 'none' }}>Releases ({version})</a>
+            <a href="https://github.com/ForgeNexa/forge-ide/releases" target="_blank" rel="noreferrer" style={{ color: 'var(--forge-text-secondary)', textDecoration: 'none' }}>Releases ({version})</a>
             <span>•</span>
-            <a href="https://github.com/manish-npx/forge/blob/main/CONTRIBUTING.md" target="_blank" rel="noreferrer" style={{ color: 'var(--forge-text-secondary)', textDecoration: 'none' }}>Contributing</a>
+            <a href="https://github.com/ForgeNexa/forge-ide/blob/main/CONTRIBUTING.md" target="_blank" rel="noreferrer" style={{ color: 'var(--forge-text-secondary)', textDecoration: 'none' }}>Contributing</a>
             <span>•</span>
-            <a href="https://github.com/manish-npx/forge/blob/main/CONTRIBUTORS.md" target="_blank" rel="noreferrer" style={{ color: 'var(--forge-text-secondary)', textDecoration: 'none' }}>Contributors</a>
+            <a href="https://github.com/ForgeNexa/forge-ide/blob/main/CONTRIBUTORS.md" target="_blank" rel="noreferrer" style={{ color: 'var(--forge-text-secondary)', textDecoration: 'none' }}>Contributors</a>
             <span>•</span>
-            <a href="https://github.com/manish-npx/forge/blob/main/SECURITY.md" target="_blank" rel="noreferrer" style={{ color: 'var(--forge-text-secondary)', textDecoration: 'none' }}>Security</a>
+            <a href="https://github.com/ForgeNexa/forge-ide/blob/main/SECURITY.md" target="_blank" rel="noreferrer" style={{ color: 'var(--forge-text-secondary)', textDecoration: 'none' }}>Security</a>
             <span>•</span>
-            <a href="https://github.com/manish-npx/forge/blob/main/LICENSE" target="_blank" rel="noreferrer" style={{ color: 'var(--forge-text-secondary)', textDecoration: 'none' }}>MIT License</a>
+            <a href="https://github.com/ForgeNexa/forge-ide/blob/main/LICENSE" target="_blank" rel="noreferrer" style={{ color: 'var(--forge-text-secondary)', textDecoration: 'none' }}>MIT License</a>
           </div>
 
           <div>
-            <strong>forge</strong> (my-forge) by <strong>Yantra Works</strong> • Designed for developers who value speed, privacy, and simplicity.
+            <strong>forge</strong> (my-forge) by <strong>ForgeNexa</strong> • Designed for developers who value speed, privacy, and simplicity.
           </div>
 
           <div>

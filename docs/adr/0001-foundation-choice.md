@@ -2,14 +2,14 @@
 
 - **Date:** 2026-10-28
 - **Status:** Accepted
-- **Author:** Yantra Works Architecture Team
+- **Author:** ForgeNexa Architecture Team
 - **Product:** my-forge ("Your workspace for building software")
 
 ---
 
 ## 1. Context & Problem Statement
 
-Yantra Works is building **my-forge**, a modern, high-performance code editor with:
+ForgeNexa is building **my-forge**, a modern, high-performance code editor with:
 1. Fast startup (< 1.2s cold start) and responsive typing/navigation.
 2. Immediate familiarity for Visual Studio Code users (Activity Bar, Explorer, Command Palette `Cmd+P`/`Cmd+Shift+P`, tabs, panels, status bar, shortcuts).
 3. A clean, distraction-free visual design (Graphite Dark & Sand Light themes, restrained contrast, clear typography).

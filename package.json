@@ -1,7 +1,7 @@
 {
   "name": "forge-monorepo",
   "version": "0.2.1",
-  "description": "my-forge — A Fast, Go-Powered Code Editor by Yantra Works",
+  "description": "my-forge — A Fast, Go-Powered Code Editor by ForgeNexa",
   "private": true,
   "workspaces": [
     "packages/*",

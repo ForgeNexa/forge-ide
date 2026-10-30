@@ -4,7 +4,7 @@
 **Verification Host:** Apple M5 (10-core ARM64), 24 GB Unified Memory  
 **Host Operating System:** macOS Darwin (ProductVersion: 27.0.1, BuildVersion: 26A434)  
 **Runtimes:** Go 1.26.4 darwin/arm64, Node.js v24.18.0, Electron 45.1.0, TypeScript 7.0.2  
-**Repository:** `https://github.com/manish-npx/forge`  
+**Repository:** `https://github.com/ForgeNexa/forge-ide`  
 
 ---
 

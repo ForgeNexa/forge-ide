@@ -1,6 +1,6 @@
 # Forge Migration Plan & Roadmap
 **Version:** v0.3.0 to v0.5.0  
-**Company:** Yantra Works  
+**Company:** ForgeNexa  
 **Status:** In Execution  
 
 ---

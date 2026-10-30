@@ -1,6 +1,6 @@
 # Forge IDE — Error & Resolution Log
 
-**Product:** Forge IDE (by Yantra Works)  
+**Product:** Forge IDE (by ForgeNexa)  
 **Maintenance Window:** 2026-10-28  
 
 ---

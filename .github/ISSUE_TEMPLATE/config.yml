@@ -4,5 +4,5 @@ contact_links:
     url: https://manish-npx.github.io/forge/
     about: Test the latest web build of Forge directly in your browser.
   - name: Security Vulnerability Reporting
-    url: https://github.com/manish-npx/forge/security/advisories/new
+    url: https://github.com/ForgeNexa/forge-ide/security/advisories/new
     about: Please report security vulnerabilities privately rather than via public issues.

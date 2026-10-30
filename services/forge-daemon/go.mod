@@ -1,4 +1,4 @@
-module github.com/yantra-works/my-forge/services/forge-daemon
+module github.com/ForgeNexa/forge-ide/services/forge-daemon
 
 go 1.26.4
 

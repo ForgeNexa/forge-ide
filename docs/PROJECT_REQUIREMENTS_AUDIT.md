@@ -2,8 +2,8 @@
 
 **Author:** Principal Systems Architect & Lead IDE Engineer  
 **Date:** 2026-10-28  
-**Repository:** `https://github.com/manish-npx/forge`  
-**Branding:** Forge IDE (`my-forge`), by **Yantra Works**  
+**Repository:** `https://github.com/ForgeNexa/forge-ide`  
+**Branding:** Forge IDE (`my-forge`), by **ForgeNexa**  
 **Audit Target:** Full reconciliation of original user requirements against the actual working repository codebase, test results, and runtime architecture.
 
 ---

@@ -1,5 +1,5 @@
 # Forge IDE Test Matrix
-**Product:** Forge (by Yantra Works)  
+**Product:** Forge (by ForgeNexa)  
 **Version:** v0.3.0  
 **Testing Environment:** macOS Darwin 24.6.0 (Apple Silicon M-series), Node.js v20+, Go 1.26+  
 

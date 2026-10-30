@@ -1,5 +1,5 @@
 # Forge Extension Compatibility Matrix
-**Product:** Forge (by Yantra Works)  
+**Product:** Forge (by ForgeNexa)  
 **Target Runtime:** Electron 35 + Monaco Editor 0.52 + Node.js 20+  
 
 ---

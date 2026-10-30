@@ -1,6 +1,6 @@
 # Forge IDE — Icon & Branding Specification
 
-**Organization:** Yantra Works  
+**Organization:** ForgeNexa  
 **Product:** Forge IDE (branded as `forge` / `my-forge`)
 
 ---

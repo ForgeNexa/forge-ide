@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Forge
 GenericName=Code Editor & IDE
-Comment=Fast, Go-powered code editor and IDE by Yantra Works
+Comment=Fast, Go-powered code editor and IDE by ForgeNexa
 Exec=forge %F
 Terminal=false
 Type=Application

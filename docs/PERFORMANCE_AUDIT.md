@@ -3,7 +3,7 @@
 **Author:** Principal Desktop Architect & Systems Performance Specialist  
 **Date:** 2026-10-28  
 **Verification Host:** Apple M5 (10-core ARM64), 24 GB RAM, macOS Darwin 27.0.1  
-**Repository:** `https://github.com/manish-npx/forge`  
+**Repository:** `https://github.com/ForgeNexa/forge-ide`  
 
 ---
 
