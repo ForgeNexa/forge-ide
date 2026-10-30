@@ -1,38 +1,121 @@
-# Forge IDE — Fast, Go-Powered Developer Workspace
+# ForgeNexa — The Open-Source Developer Tools Ecosystem
+
+[![ForgeNexa Ecosystem Banner](assets/screenshots/forgenexa-ecosystem.svg)](https://forgenexa.github.io/)
 
 [![Version](https://img.shields.io/badge/version-v0.2.1-blue?style=flat-square)](https://github.com/ForgeNexa/forge-ide/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
 [![Go Version](https://img.shields.io/badge/Go-1.26.4%20%7C%201.27.3-00ADD8?style=flat-square&logo=go)](https://golang.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-7.0.2-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19.0.0-61DAFB?style=flat-square&logo=react)](https://react.dev/)
 [![Electron](https://img.shields.io/badge/Electron-45.1.0-47848F?style=flat-square&logo=electron)](https://www.electronjs.org/)
 [![Monaco Editor](https://img.shields.io/badge/Monaco%20Editor-0.52+-1F6FEB?style=flat-square)](https://microsoft.github.io/monaco-editor/)
 [![Tests](https://img.shields.io/badge/tests-16%2F16%20flows%20passing%20(%2B%20Go%20--race)-brightgreen?style=flat-square)](docs/TESTING.md)
-[![Security](https://img.shields.io/badge/vulnerabilities-0%20(npm%20audit)-success?style=flat-square)](docs/DEPENDENCY_UPGRADE_AUDIT.md)
-[![Live Demo](https://img.shields.io/badge/Live%20Web%20IDE-Online-success?style=flat-square&logo=github)](https://manish-npx.github.io/forge/)
+[![Security](https://img.shields.io/badge/vulnerabilities-0%20(audit)-success?style=flat-square)](docs/DEPENDENCY_UPGRADE_AUDIT.md)
+[![Live Portal](https://img.shields.io/badge/Live%20Portal-Online-success?style=flat-square&logo=github)](https://forgenexa.github.io/)
 
-> **"Your workspace for building software."**  
-> Built by **ForgeNexa** · An open-source, local-first code editor and IDE combining Monaco Editor ergonomics, authentic **2026 Dark Theme**, **Material Icon Theme**, an **IntelliJ-style bottom tool window**, a **Go-First concurrent backend (`forge-daemon`)**, a **22-language LSP registry**, loopback HTTP REST API, and optional **private local AI autocomplete**.
+> **"Your workspace for building modern software."**  
+> Built by **ForgeNexa** · An open-source, local-first ecosystem of independent developer tools engineered for maximum performance, security, and developer ergonomics. Powered by high-concurrency Go systems engines and modern React 19 interfaces.
 
 ---
 
-## 🔗 Quick Links
-- **Live In-Browser IDE & Showcase:** [https://manish-npx.github.io/forge/](https://manish-npx.github.io/forge/)
+## 🏷️ Ecosystem Tags & Hashtags
+
+`#ForgeNexa` `#DeveloperTools` `#DevTools` `#GoLang` `#React19` `#TypeScript` `#MonacoEditor` `#TerminalEmulator` `#APIClient` `#GitGUI` `#OpenSource` `#LocalFirst` `#Electron`
+
+---
+
+## 🔗 Ecosystem Quick Links
+
+- **Official Web Portal & Documentation:** [https://forgenexa.github.io/](https://forgenexa.github.io/)
+- **GitHub Organization:** [https://github.com/ForgeNexa](https://github.com/ForgeNexa)
+- **Architecture & Implementation Matrix:** [docs/ECOSYSTEM_COMPLETION_TRACKER.md](docs/ECOSYSTEM_COMPLETION_TRACKER.md)
 - **Go-First Backend Architecture:** [docs/GO_BACKEND_ARCHITECTURE.md](docs/GO_BACKEND_ARCHITECTURE.md)
 - **Concurrency & Parallelism Design:** [docs/CONCURRENCY_DESIGN.md](docs/CONCURRENCY_DESIGN.md)
-- **Dependency & Toolchain Upgrade Audit:** [docs/DEPENDENCY_UPGRADE_AUDIT.md](docs/DEPENDENCY_UPGRADE_AUDIT.md)
 - **Performance Benchmarks & Empirical Measurements:** [docs/PERFORMANCE_BENCHMARKS.md](docs/PERFORMANCE_BENCHMARKS.md)
-- **Performance Architecture & Go SSR Report:** [docs/PERFORMANCE_AUDIT.md](docs/PERFORMANCE_AUDIT.md)
 - **Settings Reference Catalog:** [docs/SETTINGS_REFERENCE.md](docs/SETTINGS_REFERENCE.md)
 - **22-Language LSP Registry:** [docs/LANGUAGE_SUPPORT.md](docs/LANGUAGE_SUPPORT.md)
+- **SEO & Google Search Audit:** [docs/SEO_AND_GOOGLE_VISIBILITY_AUDIT.md](docs/SEO_AND_GOOGLE_VISIBILITY_AUDIT.md)
 - **Testing & Verification Matrix:** [docs/TESTING.md](docs/TESTING.md)
-- **Release Documentation:** [docs/RELEASING.md](docs/RELEASING.md)
-- **Contributing Guide:** [CONTRIBUTING.md](CONTRIBUTING.md)
+
+---
+
+## 🚀 The ForgeNexa Applications
+
+The ForgeNexa ecosystem consists of five independent, production-grade applications sharing a high-performance Go foundation.
+
+### 1. Forge IDE — Extensible Code Editor & Workspace
+[![Forge IDE Screenshot](assets/screenshots/forge-ide.svg)](https://github.com/ForgeNexa/forge-ide)
+
+*Repository: [`ForgeNexa/forge-ide`](https://github.com/ForgeNexa/forge-ide)*
+
+- **Monaco Code Editor**: Multi-tab surface with split editor (`◫ Split`), image viewers, and binary file protection.
+- **Go Daemon Intelligence (`forge-daemon`)**: Concurrent loopback HTTP server and JSON-RPC 2.0 daemon providing AST analysis, full-text search, and filesystem watching (`fsnotify`).
+- **IntelliJ-Style Bottom Panel**: Collapsible bottom dock housing Terminal, Problems diagnostics, Output streams, and Task runners.
+- **22-Language LSP Client**: Native symbol extraction and language server diagnostics.
+- **Local-First AI Autocomplete**: Private, zero-telemetry code completion using Fill-In-The-Middle (FIM) formatting.
+
+---
+
+### 2. Forge API — High-Throughput API Testing Client
+[![Forge API Screenshot](assets/screenshots/forge-api.svg)](https://github.com/ForgeNexa/forge-api)
+
+*Repository: [`ForgeNexa/forge-api`](https://github.com/ForgeNexa/forge-api)*
+
+- **Go Execution Engine (`engine/`)**: High-concurrency HTTP execution with connection pooling and keep-alive optimization.
+- **Microsecond Network Telemetry**: Detailed breakdown of DNS lookup, TCP connection, TLS handshake, and Time-To-First-Byte (TTFB).
+- **Encrypted Environment Secrets**: Authenticated AES-256-GCM encryption for workspace variables and tokens.
+- **React 19 Workbench**: Intuitive workbench with code snippet generators for cURL, Go, Python, and JavaScript.
+
+---
+
+### 3. Forge Terminal — Multiplexed Terminal Emulator
+[![Forge Terminal Screenshot](assets/screenshots/forge-terminal.svg)](https://github.com/ForgeNexa/forge-terminal)
+
+*Repository: [`ForgeNexa/forge-terminal`](https://github.com/ForgeNexa/forge-terminal)*
+
+- **Authentic OS PTY Supervisor (`supervisor/`)**: Genuine pseudoterminal session allocation using `creack/pty`.
+- **Zero Orphaned Processes**: Supervised child process tracking ensuring clean signal propagation (`SIGTERM`/`SIGHUP`) upon disconnect.
+- **Dynamic Pane Splitting**: Horizontal and vertical grid splitting with independent scrollback buffers.
+- **GPU-Accelerated Xterm.js 6**: Smooth font ligatures, Unicode support, and custom 2026 dark themes.
+
+---
+
+### 4. Forge Git — Visual Commit Graph & Diff Inspector
+[![Forge Git Screenshot](assets/screenshots/forge-git.svg)](https://github.com/ForgeNexa/forge-git)
+
+*Repository: [`ForgeNexa/forge-git`](https://github.com/ForgeNexa/forge-git)*
+
+- **Topological DAG Commit Graph**: Visual real-time directed acyclic graph resolving parent-child commit histories and branch branches.
+- **Hunk-Level Visual Staging**: Stage or discard specific lines and hunks across multi-file working trees.
+- **Interactive Diff Viewer**: Side-by-side and unified diff viewing with syntax highlighting.
+- **Go Porcelain Wrappers**: Fast, safe git interactions without shell escaping vulnerabilities.
+
+---
+
+### 5. Forge Hub — Central Mission-Control Launcher
+[![Forge Hub Screenshot](assets/screenshots/forge-hub.svg)](https://github.com/ForgeNexa/forge-hub)
+
+*Repository: [`ForgeNexa/forge-hub`](https://github.com/ForgeNexa/forge-hub)*
+
+- **Automated Ecosystem Discovery**: Scans `$PATH` and system directories to detect installed Forge applications.
+- **Workspace Project Switcher**: Instant switching between active developer repositories and git projects.
+- **Process Supervisor**: Monitors background daemon status, port allocations, and resource utilization.
+- **Central Developer Profiles**: Synchronize keyboard shortcuts and theme preferences across all Forge tools.
+
+---
+
+### 6. Forge Core — Shared Go Systems Foundation
+*Repository: [`ForgeNexa/forge-core`](https://github.com/ForgeNexa/forge-core)*
+
+- **`internal/concurrency`**: Bounded worker pools with graceful context cancellation and drain limits.
+- **`internal/security`**: `SafePath` boundary checks, AES-256-GCM credential encryption, and secret masking.
+- **`internal/git`**: Porcelain command wrappers for repository inspection.
 
 ---
 
 ## ⚡ What Makes Forge Different?
 
-Unlike bloated monolithic editors that ingest gigabytes of RAM before typing a single character, Forge offloads heavy computational, filesystem, Git, LSP, and task execution logic from the single-threaded Node.js main process to a concurrent Go backend daemon (`forge-daemon`):
+Unlike bloated monolithic editors that consume gigabytes of RAM before typing a single character, Forge offloads heavy computational, filesystem, Git, LSP, and task execution logic from the single-threaded Node.js main process to a concurrent Go backend daemon (`forge-daemon`):
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -58,63 +141,15 @@ Unlike bloated monolithic editors that ingest gigabytes of RAM before typing a s
 │              forge-daemon (Go 1.26.4 / 1.27.3)              │
 │                                                             │
 │  ┌───────────────┐  ┌───────────────┐  ┌─────────────────┐  │
-│  │ pkg/workspace │  │    pkg/git    │  │     pkg/lsp     │  │
-│  │ In-memory FS  │  │ Status/Diff/  │  │ 22-Language AST │  │
-│  │ Index & Watch │  │ Stage/Commit  │  │ & Diagnostics   │  │
+│  │ File Indexer  │  │ Search Engine │  │ Git Parser      │  │
+│  │ (Goroutines)  │  │ (Parallel)    │  │ (Native Go)     │  │
 │  └───────────────┘  └───────────────┘  └─────────────────┘  │
 │  ┌───────────────┐  ┌───────────────┐  ┌─────────────────┐  │
-│  │   pkg/tasks   │  │ pkg/settings  │  │     pkg/ai      │  │
-│  │ Bounded Pool  │  │ Atomic Write  │  │ FIM Tokenizer   │  │
-│  │ Stream Runner │  │ LRU Workspaces│  │ Ollama Client   │  │
+│  │ 22-Lang LSP   │  │ fsnotify      │  │ Task Execution  │  │
+│  │ AST Registry  │  │ FS Watcher    │  │ Worker Pool     │  │
 │  └───────────────┘  └───────────────┘  └─────────────────┘  │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │      pkg/api (Gin v1.12.0 Loopback REST Engine)       │  │
-│  └───────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
 ```
-
----
-
-## 🌟 Key Features
-
-### 1. Modern Visual Hierarchy & Ergonomics
-- **Authentic 2026 Dark Theme:** Based on `mrleemurray.theme-2026` (`#121314` deep charcoal background, `#BBBEBF` soft readable text, custom syntax tokens).
-- **Material Icon Theme:** Crisp, recognizable file and folder icons for 50+ programming and configuration file extensions.
-- **IntelliJ-Style Bottom Tool Window:** Terminal is docked strictly at the bottom.
-  - Multi-session tabs (`Session 1`, `Session 2`, etc.) with double-click tab renaming.
-  - Shell profile selector (`Zsh`, `Bash`, `sh`, `PowerShell`, `Command Prompt`).
-  - Side-by-side terminal splitting (`◫ Split`) and clear canvas action (`⎚ Clear`).
-  - Drag resizer, maximize/restore toggle (`🗖` / `🗗`), and quick reset height (`↕`).
-
-### 2. Go-First Backend & Fearless Concurrency
-- **Native Go Git Operations:** Status, staging, commits, diffs, and branch switches run in pure Go with sub-millisecond execution times and zero Node.js heap consumption.
-- **22-Language Lexical LSP:** Symbol extraction, cross-workspace definition discovery, hover signature documentation, and diagnostics coordination (`go vet`, `tsc`, `py_compile`).
-- **Bounded Concurrency Task Runner:** Background builds run via a Goroutine worker pool with channel semaphores (default limit: 4 tasks), streaming stdout/stderr chunks asynchronously.
-- **Loopback REST Engine:** Powered by `github.com/gin-gonic/gin v1.12.0` on `127.0.0.1` secured with 16-byte random hex bearer token authentication.
-- **Thread-Safety Guaranteed:** 100% clean under Go's race detector (`go test -race ./...`).
-
-### 3. Searchable Settings Engine (Categories A to J)
-- Accessible via `Cmd+,` or Activity Bar gear icon.
-- Full category navigation: Appearance, Editor, Files & Autosave, Language, Formatting, Diagnostics, Terminal, Git, Extensions, and Advanced.
-- Global search filter across all configuration properties.
-- **Interactive JSON Settings Editor:** Raw JSON editor with real-time parse validation and apply action.
-- **Atomic Persistence & Import/Export:** Writes via atomic file rename (`.tmp` -> `.json`), export to `forge-settings.json`, and one-click reset to defaults.
-
-### 4. File Previews & Safety Safeguards
-- **Interactive Image Viewer:** Common raster and vector image formats (`.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.bmp`, `.ico`, `.svg`) open in a checkered canvas viewer with zoom controls (`-`, `+`, `100%`).
-- **Binary File Guard:** Prevents accidental modification or corruption of `.exe`, `.dll`, `.bin`, `.wasm`, `.zip`, and `.pdf` files.
-- **Markdown Live Preview:** Toggle between raw Markdown source code and rendered HTML (`👁 Preview` / `✎ Code`).
-- **Split Editor:** `◫ Split` button allows editing two files side-by-side.
-
-### 5. Non-Destructive Autosave
-- Configurable modes: `afterDelay` (with customizable delay), `onFocusChange` (window blur), or `off`.
-- Safe dirty-state tracking with unsaved changes safeguard modal dialog on tab close.
-
-### 6. Local-First AI Autocomplete (FIM Architecture)
-- 100% private, zero-telemetry code completion using local Ollama models (`qwen2.5-coder:0.5b-base` or `1.5b-base`).
-- Fill-In-The-Middle prompt formatting: `<|fim_prefix|>...<|fim_suffix|>...<|fim_middle|>`.
-- Rendered as ghost text inline in Monaco Editor and accepted via `Tab`.
-- Deterministic offline heuristic completion fallback when model daemon is inactive.
 
 ---
 
@@ -138,43 +173,60 @@ Unlike bloated monolithic editors that ingest gigabytes of RAM before typing a s
 
 ---
 
-## 🚀 Getting Started
+## 🛠️ Building & Packaging the Ecosystem
 
 ### Prerequisites
-- **Node.js:** v20.x, v22.x LTS, or v24.x (tested on v24.18.0)
-- **Go:** 1.26.4+ / 1.27.3 (tested on Go 1.26.4 darwin/arm64)
-- **npm:** 10.x or 11.x
-- **Git**
+- **Node.js:** v20.x, v22.x LTS, or v24.x
+- **pnpm:** v9.x, v10.x, or v11.x (Strictly frozen lockfile: `pnpm-lock.yaml`)
+- **Go:** 1.22+ (tested up to 1.27.3)
+- **Bun:** 1.2+ (for web toolchains)
 
-### Installation
+### 1. Build Forge IDE Monorepo
 ```bash
-# 1. Clone repository
+# Clone the repository
 git clone https://github.com/ForgeNexa/forge-ide.git
-cd forge
+cd forge-ide
 
-# 2. Install monorepo dependencies cleanly
-npm install
+# Install workspace dependencies with frozen lockfile
+pnpm install --frozen-lockfile
 
-# 3. Compile Go daemon, protocol contracts, design system, and web bundles
-npm run build
+# Build all packages, protocol contracts, and compile Go daemon
+pnpm run build
+
+# Run automated test suites (Go race detector + TypeScript test flows)
+pnpm test
 ```
 
-### Running in Development Mode
+### 2. Package Forge IDE Desktop Distributables
 ```bash
-# Launches Go daemon, Vite dev server, and Electron desktop shell with HMR
-npm run dev
+# Compile and strip standalone Go daemons for all platforms (darwin, linux, windows)
+pnpm run package:daemons
+
+# Package desktop application binaries via Electron Builder
+pnpm --filter @my-forge/desktop run dist
 ```
 
-### Running Automated Test Suite
+### 3. Build & Test Individual Applications
 ```bash
-# Executes Go unit & race tests, TypeScript contract tests, and 16 functional flows
-npm test
-```
+# Forge Core
+cd /path/to/forge-core
+go test -v -race ./...
 
-### Building Cross-Platform Release Binaries
-```bash
-# Generates stripped standalone daemon binaries and SHA256SUMS.txt in release-artifacts/
-npm run package:daemons
+# Forge API
+cd /path/to/forge-api/engine && go test -v -race ./...
+cd ../web && bun install --frozen-lockfile && bun run build
+
+# Forge Terminal
+cd /path/to/forge-terminal/supervisor && go test -v ./...
+cd ../web && bun install --frozen-lockfile && bun run build
+
+# Forge Git
+cd /path/to/forge-git/services && go test -v -race ./...
+cd ../web && bun install --frozen-lockfile && bun run build
+
+# Forge Hub
+cd /path/to/forge-hub/discovery && go test -v -race ./...
+cd ../web && bun install --frozen-lockfile && bun run build
 ```
 
 ---
@@ -189,7 +241,6 @@ npm run package:daemons
 | **Toggle Bottom Panel** | `Cmd + J` | `Ctrl + J` | Toggle bottom tool window |
 | **Toggle Primary Sidebar** | `Cmd + B` | `Ctrl + B` | Toggle left sidebar visibility |
 | **Save Active File** | `Cmd + S` | `Ctrl + S` | Save active buffer to disk |
-| **Save As** | `Cmd + Shift + S` | `Ctrl + Shift + S` | Save buffer to new file path |
 | **Preferences** | `Cmd + ,` | `Ctrl + ,` | Open Forge Settings dialog |
 | **Format Document** | `Shift + Alt + F` | `Shift + Alt + F` | Format active document |
 
@@ -197,7 +248,7 @@ npm run package:daemons
 
 ## 👥 Community & Contributing
 
-We welcome community contributions! Please review our guidelines before opening an issue or submitting a pull request:
+We welcome community contributions across the entire ecosystem:
 - **Contributing Guidelines:** [CONTRIBUTING.md](CONTRIBUTING.md)
 - **Contributor Recognition:** [CONTRIBUTORS.md](CONTRIBUTORS.md)
 - **Code of Conduct:** [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
@@ -205,16 +256,7 @@ We welcome community contributions! Please review our guidelines before opening 
 
 ---
 
-## 📄 License & Attribution
+## 📄 License
 
-Forge IDE is open-source software licensed under the [MIT License](LICENSE).  
-Copyright (c) 2026 ForgeNexa.
-
-### Third-Party Acknowledgements
-- **Monaco Editor:** Microsoft Corporation ([MIT License](https://github.com/microsoft/monaco-editor))
-- **2026 Dark Theme:** Lee Murray ([MIT License](https://marketplace.visualstudio.com/items?itemName=mrleemurray.theme-2026))
-- **Material Icon Theme:** Philipp Kief ([MIT License](https://github.com/PKief/vscode-material-icon-theme))
-- **Go Programming Language:** Google & Go Authors ([BSD-3-Clause](https://golang.org/LICENSE))
-- **Gin Web Framework:** Gin-Gonic ([MIT License](https://github.com/gin-gonic/gin))
-- **fsnotify:** fsnotify Authors ([BSD-3-Clause](https://github.com/fsnotify/fsnotify))
-- **node-pty & xterm.js:** Microsoft Corporation ([MIT License](https://github.com/microsoft/node-pty))
+The ForgeNexa developer tools ecosystem is open-source software licensed under the [MIT License](LICENSE).  
+Copyright (c) 2026 [ForgeNexa](https://forgenexa.github.io).
