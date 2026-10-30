@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -58,17 +59,28 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        include:
+          - os: macos-latest
+            platform: mac
+          - os: ubuntu-latest
+            platform: linux
+          - os: windows-latest
+            platform: win
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22.x
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -76,19 +88,24 @@ jobs:
           go-version: '1.23.x'
 
       - name: Build Local Go Daemon
+        shell: bash
         run: |
           cd services/forge-daemon
           go build -o bin/forge-daemon ./cmd/forge-daemon
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            go build -o bin/forge-daemon.exe ./cmd/forge-daemon
+          fi
 
       - name: Install dependencies
-        run: npm install
+        run: pnpm install --frozen-lockfile
 
       - name: Build Web Renderer & Shared Protocol
-        run: npm run build
+        run: pnpm run build
 
       - name: Package with Electron Builder
-        run: npm run package --if-present
-        continue-on-error: true
+        shell: bash
+        run: |
+          pnpm run package --if-present || true
 
   publish-release:
     name: Publish GitHub Release
@@ -101,19 +118,21 @@ jobs:
       - name: Download all daemon artifacts
         uses: actions/download-artifact@v4
         with:
-          path: release-artifacts
+          path: release-assets
+          merge-multiple: true
 
-      - name: Generate SHA256 Checksums
+      - name: Generate SHA-256 Checksums
         run: |
-          cd release-artifacts
-          find . -type f -exec sha256sum {} + > SHA256SUMS.txt
+          cd release-assets
+          sha256sum * > SHA256SUMS.txt
           cat SHA256SUMS.txt
 
-      - name: Create GitHub Release
+      - name: Publish Release Assets to GitHub Release
         uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            release-artifacts/**
+            release-assets/*
           draft: false
           prerelease: false
           generate_release_notes: true

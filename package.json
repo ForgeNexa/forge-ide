@@ -1,7 +1,7 @@
 {
   "name": "forge-monorepo",
   "version": "0.2.1",
-  "description": "my-forge — A Fast, Go-Powered Code Editor by ForgeNexa",
+  "description": "my-forge \u2014 A Fast, Go-Powered Code Editor by ForgeNexa",
   "private": true,
   "workspaces": [
     "packages/*",
@@ -14,12 +14,12 @@
     "dev:renderer": "npm run dev --workspace=@my-forge/renderer",
     "dev:desktop": "npm run dev --workspace=@my-forge/desktop",
     "dev:all": "concurrently -k -p \"[{name}]\" -n \"DAEMON,RENDER,DESKTOP\" -c \"cyan,blue,magenta\" \"cd services/forge-daemon && go run cmd/forge-daemon/main.go\" \"npm run dev --workspace=@my-forge/renderer\" \"wait-on tcp:5173 && npm run dev --workspace=@my-forge/desktop\"",
-    "build": "npm run build --workspace=@my-forge/shared-protocol && npm run build --workspace=@my-forge/design-system && npm run build --workspace=@my-forge/renderer && npm run build --workspace=@my-forge/desktop && npm run build:daemon",
+    "build": "pnpm --filter @my-forge/shared-protocol run build && pnpm --filter @my-forge/design-system run build && pnpm --filter @my-forge/renderer run build && pnpm --filter @my-forge/desktop run build && pnpm run build:daemon",
     "build:daemon": "node scripts/build-daemon.js",
     "package:daemons": "bash scripts/build-daemons.sh",
     "test": "npm run test:go && npm run test:ts && npm run test:flows",
     "test:go": "cd services/forge-daemon && go test -v -race ./...",
-    "test:ts": "npm run test --workspace=@my-forge/shared-protocol",
+    "test:ts": "pnpm --filter @my-forge/shared-protocol test",
     "test:flows": "tsx --test tests/functional_flows.test.ts"
   },
   "devDependencies": {
@@ -31,5 +31,6 @@
   },
   "dependencies": {
     "node-pty": "^1.1.0"
-  }
+  },
+  "packageManager": "pnpm@11.9.0"
 }
